@@ -108,6 +108,7 @@ ISR_RX:
     MOVWF   DATO
     
     BSF	    PORTD, 0
+    
     GOTO    FIN_ISR
     
     

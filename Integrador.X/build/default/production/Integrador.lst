@@ -1,4 +1,4 @@
-MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:22:24         PAGE  1
+MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:24:15         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -57,7 +57,7 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 000B   019A           00037     CLRF        SPBRGH          ; Limpo SPBRGH
                       00038     
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:22:24         PAGE  2
+MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:24:15         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -116,7 +116,7 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0025   1A0C           00087     BTFSC   PIR1, TXIF      ; TXREG vacio? -> TXIF = 1
                       00088     ;GOTO    ISR_TX
                       00089     
-MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:22:24         PAGE  3
+MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:24:15         PAGE  3
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -143,20 +143,21 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 0031   00A0           00108     MOVWF   DATO
                       00109     
 0032   1408           00110     BSF     PORTD, 0
-0033   2???           00111     GOTO    FIN_ISR
-                      00112     
+                      00111     
+0033   2???           00112     GOTO    FIN_ISR
                       00113     
-0034                  00114 FIN_ISR:
-0034   0E71           00115     SWAPF   STATUS_TEMP, W              ; RECUPERO CONTEXTO 
-0035   0083           00116     MOVWF   STATUS
-0036   0EF0           00117     SWAPF   W_TEMP, F
-0037   0E70           00118     SWAPF   W_TEMP, W
-                      00119 
-0038   0009           00120     RETFIE
-                      00121     
+                      00114     
+0034                  00115 FIN_ISR:
+0034   0E71           00116     SWAPF   STATUS_TEMP, W              ; RECUPERO CONTEXTO 
+0035   0083           00117     MOVWF   STATUS
+0036   0EF0           00118     SWAPF   W_TEMP, F
+0037   0E70           00119     SWAPF   W_TEMP, W
+                      00120 
+0038   0009           00121     RETFIE
                       00122     
-23E1 3FFF             00123     END
-MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:22:24         PAGE  4
+                      00123     
+23E1 3FFF             00124     END
+MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:24:15         PAGE  4
 
 
 SYMBOL TABLE
@@ -215,7 +216,7 @@ BRG6                              00000006
 BRG7                              00000007
 BRG8                              00000000
 BRG9                              00000001
-MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:22:24         PAGE  5
+MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:24:15         PAGE  5
 
 
 SYMBOL TABLE
@@ -274,7 +275,7 @@ CHS0                              00000002
 CHS1                              00000003
 CHS2                              00000004
 CHS3                              00000005
-MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:22:24         PAGE  6
+MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:24:15         PAGE  6
 
 
 SYMBOL TABLE
@@ -333,7 +334,7 @@ INTCON                            0000000B
 INTE                              00000004
 INTEDG                            00000006
 INTF                              00000001
-MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:22:24         PAGE  7
+MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:24:15         PAGE  7
 
 
 SYMBOL TABLE
@@ -392,7 +393,7 @@ OSTS                              00000003
 P                                 00000004
 P1M0                              00000006
 P1M1                              00000007
-MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:22:24         PAGE  8
+MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:24:15         PAGE  8
 
 
 SYMBOL TABLE
@@ -451,7 +452,7 @@ RB5                               00000005
 RB6                               00000006
 RB7                               00000007
 RBIE                              00000003
-MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:22:24         PAGE  9
+MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:24:15         PAGE  9
 
 
 SYMBOL TABLE
@@ -510,7 +511,7 @@ SR0                               00000006
 SR1                               00000007
 SRCON                             00000185
 SREN                              00000005
-MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:22:24         PAGE 10
+MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:24:15         PAGE 10
 
 
 SYMBOL TABLE
@@ -569,7 +570,7 @@ TMR1ON                            00000000
 TMR2                              00000011
 TMR2IE                            00000001
 TMR2IF                            00000001
-MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:22:24         PAGE 11
+MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:24:15         PAGE 11
 
 
 SYMBOL TABLE
@@ -628,7 +629,7 @@ TUN2                              00000002
 TUN3                              00000003
 TUN4                              00000004
 TX8_9                             00000006
-MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:22:24         PAGE 12
+MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:24:15         PAGE 12
 
 
 SYMBOL TABLE
@@ -687,7 +688,7 @@ _BOREN_NSLEEP                     00003EFF
 _BOREN_OFF                        00003CFF
 _BOREN_ON                         00003FFF
 _BOREN_SBODEN                     00003DFF
-MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:22:24         PAGE 13
+MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:24:15         PAGE 13
 
 
 SYMBOL TABLE
@@ -746,7 +747,7 @@ _WDT_ON                           00003FFF
 _WRT_1FOURTH                      00003BFF
 _WRT_256                          00003DFF
 _WRT_HALF                         000039FF
-MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:22:24         PAGE 14
+MPASM 5.87                    INTEGRADOR.ASM   11-5-2025  17:24:15         PAGE 14
 
 
 SYMBOL TABLE
