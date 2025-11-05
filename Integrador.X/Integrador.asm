@@ -62,11 +62,15 @@ INICIO:
     BANKSEL	PIE1
     MOVLW	B'00110000'
     MOVWF	PIE1		; Habilito Interrupción TXIE y RCIE del PIE1
-
-
+    
+    ;BANKSEL TXREG
+    ;MOVLW   0x41
+    ;MOVWF   TXREG
 
 
 LOOP:
+
+
     GOTO    LOOP
 
 
@@ -81,7 +85,7 @@ ISR:
     ; ------------- ISR --------------- ;
 
     BTFSC   PIR1, TXIF	    ; TXREG vacio? -> TXIF = 1
-    GOTO    ISR_TX
+    ;GOTO    ISR_TX
     
     BTFSC   PIR1, RCIF	    ; RCREG lleno? -> RXIF = 1
     GOTO    ISR_RX
@@ -89,19 +93,21 @@ ISR:
     GOTO    FIN_ISR
 
 
-ISR_TX:    
+ISR_TX:
+    BANKSEL TXREG
     MOVLW   0X41
     MOVWF   TXREG
     
-    BSF	    PORTD, 0
     
     GOTO    FIN_ISR
 
 
 ISR_RX:
+    BANKSEL RCREG
     MOVF    RCREG, W
     MOVWF   DATO
     
+    BSF	    PORTD, 0
     GOTO    FIN_ISR
     
     
