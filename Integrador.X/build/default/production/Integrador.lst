@@ -1,4 +1,4 @@
-MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  12:44:40         PAGE  1
+MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  18:38:00         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -57,7 +57,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 0005                  00040 INICIO:
                       00041     ; Configuración UART
 0005   1683 1303      00042     BANKSEL     TXSTA
-MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  12:44:40         PAGE  2
+MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  18:38:00         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -85,7 +85,7 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0011   0188           00058     CLRF        PORTD
 0012   3041           00059     MOVLW       0x41
 0013   00A0           00060     MOVWF       DATO
-                      00061     
+                      00061   
 0014   1683 1703      00062     BANKSEL     BAUDCTL
                       00063 
 0016   3048           00064     MOVLW       B'01001000'
@@ -104,7 +104,7 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 001F   1683 1303      00076     BANKSEL     PIE1
 0021   3020           00077     MOVLW       B'00100000'
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0022   008C           00078     MOVWF       PIE1            ; Habilito Interrupción TXIE y RCIE del PIE1
+0022   008C           00078     MOVWF       PIE1            ; Habilito Interrupción RCIE del PIE1
                       00079     
                       00080 
                       00081 
@@ -114,14 +114,15 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0026   2???           00085     GOTO    LOOP
                       00086     
 0027   1283 1303      00087     BANKSEL TXREG
-0029   0820           00088     MOVF    DATO, W
-002A   0099           00089     MOVWF   TXREG
-MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  12:44:40         PAGE  3
+Message[305]: Using default destination of 1 (file).
+0029   08A0           00088     MOVF    DATO
+MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  18:38:00         PAGE  3
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
+002A   0099           00089     MOVWF   TXREG
                       00090     
 002B   2???           00091     CALL    DELAY
                       00092     
@@ -174,13 +175,13 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 0040   0000           00139     NOP
 0041   0BA6           00140     DECFSZ contador, f
 0042   2???           00141     GOTO CARGA
-0043   0008           00142     return
-MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  12:44:40         PAGE  4
+MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  18:38:00         PAGE  4
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
+0043   0008           00142     return
 0044                  00143 CARGA
 0044   30FA           00144     MOVLW contValor2
 0045   00A7           00145     MOVWF contador2  
@@ -202,7 +203,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00161 
                       00162 
 23E1 3FFF             00163     END
-MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  12:44:40         PAGE  5
+MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  18:38:00         PAGE  5
 
 
 SYMBOL TABLE
@@ -261,7 +262,7 @@ BRG6                              00000006
 BRG7                              00000007
 BRG8                              00000000
 BRG9                              00000001
-MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  12:44:40         PAGE  6
+MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  18:38:00         PAGE  6
 
 
 SYMBOL TABLE
@@ -320,7 +321,7 @@ CCPR2                             0000001B
 CCPR2H                            0000001C
 CCPR2L                            0000001B
 CHS0                              00000002
-MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  12:44:40         PAGE  7
+MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  18:38:00         PAGE  7
 
 
 SYMBOL TABLE
@@ -379,7 +380,7 @@ I2C_READ                          00000002
 I2C_START                         00000003
 I2C_STOP                          00000004
 INDF                              00000000
-MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  12:44:40         PAGE  8
+MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  18:38:00         PAGE  8
 
 
 SYMBOL TABLE
@@ -438,7 +439,7 @@ OERR                              00000001
 OPTION_REG                        00000081
 OSCCON                            0000008F
 OSCTUNE                           00000090
-MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  12:44:40         PAGE  9
+MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  18:38:00         PAGE  9
 
 
 SYMBOL TABLE
@@ -497,7 +498,7 @@ RA7                               00000007
 RB0                               00000000
 RB1                               00000001
 RB2                               00000002
-MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  12:44:40         PAGE 10
+MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  18:38:00         PAGE 10
 
 
 SYMBOL TABLE
@@ -556,7 +557,7 @@ SEN                               00000000
 SENDB                             00000003
 SMP                               00000007
 SPBRG                             00000099
-MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  12:44:40         PAGE 11
+MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  18:38:00         PAGE 11
 
 
 SYMBOL TABLE
@@ -615,7 +616,7 @@ TMR1CS                            00000001
 TMR1GE                            00000006
 TMR1H                             0000000F
 TMR1IE                            00000000
-MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  12:44:40         PAGE 12
+MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  18:38:00         PAGE 12
 
 
 SYMBOL TABLE
@@ -674,7 +675,7 @@ TRISE1                            00000001
 TRISE2                            00000002
 TRISE3                            00000003
 TRMT                              00000001
-MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  12:44:40         PAGE 13
+MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  18:38:00         PAGE 13
 
 
 SYMBOL TABLE
@@ -733,7 +734,7 @@ W_TEMP                            00000070
 Z                                 00000002
 _BOR21V                           00003EFF
 _BOR40V                           00003FFF
-MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  12:44:40         PAGE 14
+MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  18:38:00         PAGE 14
 
 
 SYMBOL TABLE
@@ -792,7 +793,7 @@ _MCLRE_ON                         00003FFF
 _PWRTE_OFF                        00003FFF
 _PWRTE_ON                         00003FEF
 _WDTE_OFF                         00003FF7
-MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  12:44:40         PAGE 15
+MPASM 5.87                    INTEGRADOR.ASM   11-6-2025  18:38:00         PAGE 15
 
 
 SYMBOL TABLE
@@ -816,6 +817,6 @@ contador3                         00000028
 
 Errors   :     0
 Warnings :     0 reported,     0 suppressed
-Messages :     6 reported,     0 suppressed
+Messages :     7 reported,     0 suppressed
 
 

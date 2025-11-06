@@ -13,7 +13,7 @@
 
 
 DATO	    EQU 0X20
-FLAG	    EQU 0X21
+FLAG	    EQU	0X21
 
 ; ---------- Variables para delay ---------------- ;
 
@@ -58,7 +58,7 @@ INICIO:
     CLRF	PORTD
     MOVLW	0x41
     MOVWF	DATO
-    
+  
     BANKSEL	BAUDCTL
 
     MOVLW	B'01001000'
@@ -75,7 +75,7 @@ INICIO:
     
     BANKSEL	PIE1
     MOVLW	B'00100000'
-    MOVWF	PIE1		; Habilito Interrupción TXIE y RCIE del PIE1
+    MOVWF	PIE1		; Habilito Interrupción RCIE del PIE1
     
 
 
@@ -85,7 +85,7 @@ LOOP:
     GOTO    LOOP
     
     BANKSEL TXREG
-    MOVF    DATO, W
+    MOVF    DATO
     MOVWF   TXREG
     
     CALL    DELAY
