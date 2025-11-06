@@ -12,8 +12,11 @@
  __CONFIG _CONFIG2, _BOR4V_BOR40V & _WRT_OFF
 
 
-DATO	    EQU 0X20
+RPM	    EQU 0X20
 FLAG	    EQU	0X21
+
+ADC_L	    EQU 0X22
+ADC_H	    EQU 0X23
 
 ; ---------- Variables para delay ---------------- ;
 
@@ -56,9 +59,15 @@ INICIO:
     MOVWF	RCSTA		;Configuro la Recepción
     
     CLRF	PORTD
-    MOVLW	0x41
-    MOVWF	DATO
-  
+
+    CLRF	RPM
+    
+    MOVLW	D'65'
+    MOVWF	ADC_H
+    MOVLW	D'48'
+    MOVWF	ADC_L
+    
+    
     BANKSEL	BAUDCTL
 
     MOVLW	B'01001000'
@@ -85,12 +94,29 @@ LOOP:
     GOTO    LOOP
     
     BANKSEL TXREG
-    MOVF    DATO
+    
+    MOVF    ADC_L, W
+    MOVWF   TXREG
+    MOVF    ADC_H, W
     MOVWF   TXREG
     
     CALL    DELAY
     
+    BTFSS   FLAG, 1
+    GOTO    LOOP
     
+    
+    BCF	    PORTD, 0
+    
+    INCF    ADC_L, F
+    INCF    ADC_H, F
+    MOVF    ADC_L, W
+    MOVWF   TXREG
+    MOVF    ADC_H, W
+    MOVWF   TXREG
+    
+    BCF	    FLAG, 1
+    CALL    DELAY
     
     GOTO    LOOP
 
@@ -115,7 +141,8 @@ ISR:
 ISR_RX:
     BANKSEL RCREG
     MOVF    RCREG, W
-    MOVWF   DATO
+    MOVWF   RPM
+    BSF	    FLAG, 1
     
     BSF	    PORTD, 0
     
