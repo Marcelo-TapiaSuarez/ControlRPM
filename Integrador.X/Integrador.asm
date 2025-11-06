@@ -13,6 +13,18 @@
 
 
 DATO	    EQU 0X20
+FLAG	    EQU 0X21
+
+; ---------- Variables para delay ---------------- ;
+
+contValor   EQU D'2'
+contador    EQU 0x26
+contValor2  EQU D'250'
+contador2   EQU 0x27
+contValor3  EQU D'250'
+contador3   EQU 0x28
+; ------------------------------------------------ ;
+
 W_TEMP	    EQU 0X70
 STATUS_TEMP EQU 0X71
 
@@ -63,14 +75,12 @@ INICIO:
     MOVLW	B'00110000'
     MOVWF	PIE1		; Habilito Interrupción TXIE y RCIE del PIE1
     
-    ;BANKSEL TXREG
-    ;MOVLW   0x41
-    ;MOVWF   TXREG
 
 
 LOOP:
+    
 
-
+    
     GOTO    LOOP
 
 
@@ -85,7 +95,7 @@ ISR:
     ; ------------- ISR --------------- ;
 
     BTFSC   PIR1, TXIF	    ; TXREG vacio? -> TXIF = 1
-    ;GOTO    ISR_TX
+    GOTO    ISR_TX
     
     BTFSC   PIR1, RCIF	    ; RCREG lleno? -> RXIF = 1
     GOTO    ISR_RX
@@ -120,5 +130,34 @@ FIN_ISR:
 
     RETFIE
     
+
+DELAY
+    MOVLW contValor
+    MOVWF contador
+   
+BUCLE
+    NOP
+    DECFSZ contador, f
+    GOTO CARGA
+    return
+CARGA
+    MOVLW contValor2
+    MOVWF contador2  
+LOOP2
+    NOP
+    DECFSZ contador2, f
+    GOTO CARGA2
+    GOTO BUCLE
     
+CARGA2
+    MOVLW contValor3
+    MOVWF contador3
+    
+LOOP3
+    NOP
+    DECFSZ contador3, f
+    GOTO LOOP3
+    GOTO LOOP2
+
+
     END
