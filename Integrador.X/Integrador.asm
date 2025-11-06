@@ -17,7 +17,7 @@ FLAG	    EQU 0X21
 
 ; ---------- Variables para delay ---------------- ;
 
-contValor   EQU D'2'
+contValor   EQU D'5'
 contador    EQU 0x26
 contValor2  EQU D'250'
 contador2   EQU 0x27
@@ -56,7 +56,9 @@ INICIO:
     MOVWF	RCSTA		;Configuro la Recepción
     
     CLRF	PORTD
-
+    MOVLW	0x41
+    MOVWF	DATO
+    
     BANKSEL	BAUDCTL
 
     MOVLW	B'01001000'
@@ -72,14 +74,23 @@ INICIO:
     CLRF	PIR1		; Deshabilito banderas de PIR1
     
     BANKSEL	PIE1
-    MOVLW	B'00110000'
+    MOVLW	B'00100000'
     MOVWF	PIE1		; Habilito Interrupción TXIE y RCIE del PIE1
     
 
 
 LOOP:
+    BANKSEL PIR1
+    BTFSS   PIR1, TXIF
+    GOTO    LOOP
     
-
+    BANKSEL TXREG
+    MOVF    DATO, W
+    MOVWF   TXREG
+    
+    CALL    DELAY
+    
+    
     
     GOTO    LOOP
 
@@ -93,23 +104,12 @@ ISR:
     MOVWF   STATUS_TEMP
 
     ; ------------- ISR --------------- ;
-
-    BTFSC   PIR1, TXIF	    ; TXREG vacio? -> TXIF = 1
-    GOTO    ISR_TX
     
     BTFSC   PIR1, RCIF	    ; RCREG lleno? -> RXIF = 1
     GOTO    ISR_RX
     
     GOTO    FIN_ISR
 
-
-ISR_TX:
-    BANKSEL TXREG
-    MOVLW   0X41
-    MOVWF   TXREG
-    
-    
-    GOTO    FIN_ISR
 
 
 ISR_RX:
