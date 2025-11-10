@@ -1,12 +1,12 @@
 MPLINK 5.09, LINKER
-Linker Map File - Created Mon Nov 10 10:07:21 2025
+Linker Map File - Created Mon Nov 10 17:45:16 2025
 
                                  Section Info
                   Section       Type    Address   Location Size(Bytes)
                 ---------  ---------  ---------  ---------  ---------
                    .org_0       code   0x000000    program   0x000002
                    .cinit    romdata   0x000001    program   0x000004
-                   .org_1       code   0x000004    program   0x000086
+                   .org_1       code   0x000004    program   0x000096
 .config_2007_BUILD/DEFAULT/PRODUCTION/INTEGRA       code   0x002007    program   0x000002
 .config_2008_BUILD/DEFAULT/PRODUCTION/INTEGRA       code   0x002008    program   0x000002
 
@@ -16,26 +16,29 @@ Linker Map File - Created Mon Nov 10 10:07:21 2025
                                Start         End      
                            ---------   ---------      
                             0x000000    0x000002      
-                            0x000004    0x000046      
+                            0x000004    0x00004e      
                             0x002007    0x002008      
-            72 out of 8455 program addresses used, program memory utilization is 0%
+            80 out of 8455 program addresses used, program memory utilization is 0%
 
 
 
                               Symbols - Sorted by Name
                      Name    Address   Location    Storage File                     
                 ---------  ---------  ---------  --------- ---------                
-               Delay100ms   0x000035    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
-                 Delay1ms   0x00003b    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
-                  Delay1s   0x00002f    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
-                  FIN_ISR   0x000042    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+               Delay100ms   0x000038    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+                 Delay1ms   0x00003e    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+                  Delay1s   0x000032    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+               Delay400us   0x000045    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+          Delay400us_loop   0x000047    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+                  FIN_ISR   0x00004a    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
                    INICIO   0x000005    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
-                      ISR   0x000022    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+                      ISR   0x000025    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
                      LOOP   0x000021    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
-                Loop100ms   0x000037    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
-                  Loop1ms   0x00003d    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
-                   Loop1s   0x000031    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
-                 TMR2_ISR   0x000027    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+                Loop100ms   0x00003a    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+                  Loop1ms   0x000040    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+                   Loop1s   0x000034    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+                 TMR2_ISR   0x00002a    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+                            0x00004f    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
 
 
 
@@ -44,14 +47,17 @@ Linker Map File - Created Mon Nov 10 10:07:21 2025
                 ---------  ---------  ---------  --------- ---------                
                    INICIO   0x000005    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
                      LOOP   0x000021    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
-                      ISR   0x000022    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
-                 TMR2_ISR   0x000027    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
-                  Delay1s   0x00002f    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
-                   Loop1s   0x000031    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
-               Delay100ms   0x000035    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
-                Loop100ms   0x000037    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
-                 Delay1ms   0x00003b    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
-                  Loop1ms   0x00003d    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
-                  FIN_ISR   0x000042    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+                      ISR   0x000025    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+                 TMR2_ISR   0x00002a    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+                  Delay1s   0x000032    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+                   Loop1s   0x000034    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+               Delay100ms   0x000038    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+                Loop100ms   0x00003a    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+                 Delay1ms   0x00003e    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+                  Loop1ms   0x000040    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+               Delay400us   0x000045    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+          Delay400us_loop   0x000047    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+                  FIN_ISR   0x00004a    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
+                            0x00004f    program     static C:\Users\marce\OneDrive\Documentos\Trabajo Integrador\Integrador.X\Integrador.asm
 
 

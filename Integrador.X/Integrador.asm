@@ -1,21 +1,16 @@
-; PIC16F887 Configuration Bit Settings
+;-----------------------------------------------
+    LIST P=16F887
+    #include <p16f887.inc>
 
-; Assembly source line config statements
-
-#include "p16f887.inc"
-
-; CONFIG1
-; __config 0x23E1
+;---------------------------------bits de configuración------------------------
  __CONFIG _CONFIG1, _FOSC_XT & _WDTE_OFF & _PWRTE_ON & _MCLRE_ON & _CP_OFF & _CPD_OFF & _BOREN_ON & _IESO_OFF & _FCMEN_OFF & _LVP_OFF
-; CONFIG2
-; __config 0x3FFF
  __CONFIG _CONFIG2, _BOR4V_BOR40V & _WRT_OFF
-
 
 ;---------------------------------Variables-----------------------------------
 Contador1   EQU 0x20
 Contador2   EQU 0x21
 Contador3   EQU 0x22
+CONTA	    EQU 0X24
 VALOR_INGRESADO_RPM EQU 0X23
 W_TEMP EQU 0X70
 STATUS_TEMP EQU 0X71
@@ -53,7 +48,7 @@ INICIO
     movlw   b'00001100'        ; ACTIVO EL MODO PWM Y PONGO LOS 2 BITS LSB EN BAJO PORQUE NO LOS USAMOS 
     movwf   CCP1CON
 
-    MOVLW   D'66'              ; PARA UNA FRECUENCIA CONSTANTE DE 12KHZ TENGO UN PR2 DE 83
+    MOVLW   D'63'              ; PARA UNA FRECUENCIA CONSTANTE DE 12KHZ TENGO UN PR2 DE 83
     BANKSEL PR2
     movwf   PR2
 
@@ -71,11 +66,10 @@ INICIO
     BANKSEL PIE1
     BSF PIE1, 1			; ACTIVO INTERRUPCION POR MATCH DE TMR2 A PR2
     
-    MOVLW B'11110000'		; GIE=1, PEIE= 1, T0IE=1, INTE=1, RBIE=1, T0IF=0, INTF=0, RBIF=0
-    MOVWF INTCON 
+   BANKSEL INTCON
+   MOVLW b'11000000'
+   MOVWF INTCON      ; Habilito GIE y PEIE
     
-    MOVLW   D'30'
-    MOVWF   VALOR_INGRESADO_RPM
     ;---------------------------------------------------------------------------------------------
     ;Necesitás habilitar las interrupciones periféricas (bit PEIE en INTCON)
     ;porque el Timer2 es un periférico, no un temporizador principal del núcle
@@ -84,7 +78,22 @@ INICIO
  
     
 LOOP 
-    GOTO LOOP			; ESPERAMOS INTERRUPCIONES
+    ;MOVLW   D'254'
+    ;MOVWF   VALOR_INGRESADO_RPM
+    ;CALL    Delay1s
+    
+    ;MOVLW   D'100'
+    ;MOVWF   VALOR_INGRESADO_RPM
+    ;CALL    Delay1s
+
+    MOVLW   D'20'
+    MOVWF   VALOR_INGRESADO_RPM
+    CALL    Delay1s
+
+    ;CLRF    VALOR_INGRESADO_RPM   ; = 0
+    ;CALL    Delay400us
+
+    GOTO LOOP
     
     
     
@@ -140,6 +149,15 @@ Loop1ms
     DECFSZ  Contador3,F
     GOTO    Loop1ms
     RETURN
+    
+    
+Delay400us
+    MOVLW   D'133'        ; Aprox 400 us a 4 MHz
+    MOVWF   CONTA
+Delay400us_loop
+    DECFSZ  CONTA, F
+    GOTO    Delay400us_loop
+    RETURN
 
     
 FIN_ISR
@@ -149,6 +167,6 @@ FIN_ISR
     SWAPF	W_TEMP, W			 
     RETFIE
 
-	
-	
+
+    
     END
