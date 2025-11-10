@@ -1,4 +1,4 @@
-MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  17:45:15         PAGE  1
+MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  18:16:52         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -57,7 +57,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00037    
                       00038     
                       00039     ;--- Configuración general ---
-MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  17:45:15         PAGE  2
+MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  18:16:52         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -116,7 +116,7 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
                       00085     ;MOVLW   D'100'
                       00086     ;MOVWF   VALOR_INGRESADO_RPM
                       00087     ;CALL    Delay1s
-MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  17:45:15         PAGE  3
+MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  18:16:52         PAGE  3
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -148,72 +148,74 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00111         
 002A                  00112 TMR2_ISR
 002A   0823           00113     MOVF VALOR_INGRESADO_RPM,0    ; EL VALOR DE RPM QUE INGRESE SE PEGA EN W
-002B   1283 1303      00114     BANKSEL CCPR1L
-002D   0095           00115     MOVWF   CCPR1L             ; W -> CCPR1L (8 bits MSB del duty)
-002E   1297           00116     BCF     CCP1CON,5          ; PONGO LOS 2 BITS LSB EN BAJO PORQUE NO LOS USAMOS 
-002F   1217           00117     BCF     CCP1CON,4
-0030   108C           00118     BCF     PIR1, 1                     ; BAJO LA BANDERA DE DESBORDE TMR2
-                      00119     
-0031   2???           00120     GOTO FIN_ISR
+002B   0C23           00114     RRF VALOR_INGRESADO_RPM, W
+002C   0C23           00115     RRF VALOR_INGRESADO_RPM, W
+002D   1283 1303      00116     BANKSEL CCPR1L
+002F   0095           00117     MOVWF   CCPR1L             ; W -> CCPR1L (8 bits MSB del duty)
+0030   1297           00118     BCF     CCP1CON,5          ; PONGO LOS 2 BITS LSB EN BAJO PORQUE NO LOS USAMOS 
+0031   1217           00119     BCF     CCP1CON,4
+0032   108C           00120     BCF     PIR1, 1                     ; BAJO LA BANDERA DE DESBORDE TMR2
                       00121     
-                      00122     
-                      00123 
-                      00124 
-0032                  00125 Delay1s                         ; Delay de 1 segundo 
-0032   300A           00126     MOVLW   D'10'
-0033   00A0           00127     MOVWF   Contador1
-0034                  00128 Loop1s
-0034   2???           00129     CALL    Delay100ms
-0035   0BA0           00130     DECFSZ  Contador1,F
-0036   2???           00131     GOTO    Loop1s
-0037   0008           00132     RETURN
-                      00133 
-0038                  00134 Delay100ms
-0038   3064           00135     MOVLW   D'100'
-0039   00A1           00136     MOVWF   Contador2
-003A                  00137 Loop100ms
-003A   2???           00138     CALL    Delay1ms
-003B   0BA1           00139     DECFSZ  Contador2,F
-003C   2???           00140     GOTO    Loop100ms
-MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  17:45:15         PAGE  4
+0033   2???           00122     GOTO FIN_ISR
+                      00123     
+                      00124     
+                      00125 
+                      00126 
+0034                  00127 Delay1s                         ; Delay de 1 segundo 
+0034   300A           00128     MOVLW   D'10'
+0035   00A0           00129     MOVWF   Contador1
+0036                  00130 Loop1s
+0036   2???           00131     CALL    Delay100ms
+0037   0BA0           00132     DECFSZ  Contador1,F
+0038   2???           00133     GOTO    Loop1s
+0039   0008           00134     RETURN
+                      00135 
+003A                  00136 Delay100ms
+003A   3064           00137     MOVLW   D'100'
+003B   00A1           00138     MOVWF   Contador2
+003C                  00139 Loop100ms
+003C   2???           00140     CALL    Delay1ms
+MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  18:16:52         PAGE  4
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-003D   0008           00141     RETURN
-                      00142 
-003E                  00143 Delay1ms
-003E   30FA           00144     MOVLW   D'250'
-003F   00A2           00145     MOVWF   Contador3
-0040                  00146 Loop1ms
-0040   0000           00147     NOP
-0041   0000           00148     NOP
-0042   0BA2           00149     DECFSZ  Contador3,F
-0043   2???           00150     GOTO    Loop1ms
-0044   0008           00151     RETURN
-                      00152     
-                      00153     
-0045                  00154 Delay400us
-0045   3085           00155     MOVLW   D'133'        ; Aprox 400 us a 4 MHz
-0046   00A4           00156     MOVWF   CONTA
-0047                  00157 Delay400us_loop
-0047   0BA4           00158     DECFSZ  CONTA, F
-0048   2???           00159     GOTO    Delay400us_loop
-0049   0008           00160     RETURN
-                      00161 
-                      00162     
-004A                  00163 FIN_ISR
-004A   0E71           00164     SWAPF       STATUS_TEMP, W          ; RECUPERO CONTEXTO 
-004B   0083           00165     MOVWF       STATUS
-004C   0EF0           00166     SWAPF       W_TEMP, F
-004D   0E70           00167     SWAPF       W_TEMP, W                        
-004E   0009           00168     RETFIE
-                      00169 
-                      00170 
-004F                  00171     
-23E1 3FFF             00172     END
-MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  17:45:15         PAGE  5
+003D   0BA1           00141     DECFSZ  Contador2,F
+003E   2???           00142     GOTO    Loop100ms
+003F   0008           00143     RETURN
+                      00144 
+0040                  00145 Delay1ms
+0040   30FA           00146     MOVLW   D'250'
+0041   00A2           00147     MOVWF   Contador3
+0042                  00148 Loop1ms
+0042   0000           00149     NOP
+0043   0000           00150     NOP
+0044   0BA2           00151     DECFSZ  Contador3,F
+0045   2???           00152     GOTO    Loop1ms
+0046   0008           00153     RETURN
+                      00154     
+                      00155     
+0047                  00156 Delay400us
+0047   3085           00157     MOVLW   D'133'        ; Aprox 400 us a 4 MHz
+0048   00A4           00158     MOVWF   CONTA
+0049                  00159 Delay400us_loop
+0049   0BA4           00160     DECFSZ  CONTA, F
+004A   2???           00161     GOTO    Delay400us_loop
+004B   0008           00162     RETURN
+                      00163 
+                      00164     
+004C                  00165 FIN_ISR
+004C   0E71           00166     SWAPF       STATUS_TEMP, W          ; RECUPERO CONTEXTO 
+004D   0083           00167     MOVWF       STATUS
+004E   0EF0           00168     SWAPF       W_TEMP, F
+004F   0E70           00169     SWAPF       W_TEMP, W                        
+0050   0009           00170     RETFIE
+                      00171 
+                      00172 
+0051                  00173     
+23E1 3FFF             00174     END
+MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  18:16:52         PAGE  5
 
 
 SYMBOL TABLE
@@ -272,7 +274,7 @@ BRG6                              00000006
 BRG7                              00000007
 BRG8                              00000000
 BRG9                              00000001
-MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  17:45:15         PAGE  6
+MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  18:16:52         PAGE  6
 
 
 SYMBOL TABLE
@@ -331,7 +333,7 @@ CHS0                              00000002
 CHS1                              00000003
 CHS2                              00000004
 CHS3                              00000005
-MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  17:45:15         PAGE  7
+MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  18:16:52         PAGE  7
 
 
 SYMBOL TABLE
@@ -357,11 +359,11 @@ DC2B0                             00000004
 DC2B1                             00000005
 D_A                               00000005
 D_NOT_A                           00000005
-Delay100ms                        00000038
-Delay1ms                          0000003E
-Delay1s                           00000032
-Delay400us                        00000045
-Delay400us_loop                   00000047
+Delay100ms                        0000003A
+Delay1ms                          00000040
+Delay1s                           00000034
+Delay400us                        00000047
+Delay400us_loop                   00000049
 ECCPAS                            0000009C
 ECCPAS0                           00000004
 ECCPAS1                           00000005
@@ -379,7 +381,7 @@ EEIF                              00000004
 EEPGD                             00000007
 F                                 00000001
 FERR                              00000002
-FIN_ISR                           0000004A
+FIN_ISR                           0000004C
 FSR                               00000004
 FVREN                             00000000
 GCEN                              00000007
@@ -390,7 +392,7 @@ GO_NOT_DONE                       00000001
 HTS                               00000002
 I2C_DATA                          00000005
 I2C_READ                          00000002
-MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  17:45:15         PAGE  8
+MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  18:16:52         PAGE  8
 
 
 SYMBOL TABLE
@@ -420,9 +422,9 @@ IRP                               00000007
 ISR                               00000025
 LOOP                              00000021
 LTS                               00000001
-Loop100ms                         0000003A
-Loop1ms                           00000040
-Loop1s                            00000034
+Loop100ms                         0000003C
+Loop1ms                           00000042
+Loop1s                            00000036
 MC1OUT                            00000007
 MC2OUT                            00000006
 MSK                               00000093
@@ -449,7 +451,7 @@ NOT_TX8                           00000006
 NOT_W                             00000002
 NOT_WRITE                         00000002
 OERR                              00000001
-MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  17:45:15         PAGE  9
+MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  18:16:52         PAGE  9
 
 
 SYMBOL TABLE
@@ -508,7 +510,7 @@ RA4                               00000004
 RA5                               00000005
 RA6                               00000006
 RA7                               00000007
-MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  17:45:15         PAGE 10
+MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  18:16:52         PAGE 10
 
 
 SYMBOL TABLE
@@ -567,7 +569,7 @@ SBOREN                            00000004
 SCKP                              00000004
 SCS                               00000000
 SEN                               00000000
-MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  17:45:15         PAGE 11
+MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  18:16:52         PAGE 11
 
 
 SYMBOL TABLE
@@ -626,7 +628,7 @@ TMR0IE                            00000005
 TMR0IF                            00000002
 TMR1                              0000000E
 TMR1CS                            00000001
-MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  17:45:15         PAGE 12
+MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  18:16:52         PAGE 12
 
 
 SYMBOL TABLE
@@ -685,7 +687,7 @@ TRISD6                            00000006
 TRISD7                            00000007
 TRISE                             00000089
 TRISE0                            00000000
-MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  17:45:15         PAGE 13
+MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  18:16:52         PAGE 13
 
 
 SYMBOL TABLE
@@ -744,7 +746,7 @@ WPUB7                             00000007
 WR                                00000001
 WREN                              00000002
 WRERR                             00000003
-MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  17:45:15         PAGE 14
+MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  18:16:52         PAGE 14
 
 
 SYMBOL TABLE
@@ -803,7 +805,7 @@ _INTRC_OSC_NOCLKOUT               00003FFC
 _LP_OSC                           00003FF8
 _LVP_OFF                          00002FFF
 _LVP_ON                           00003FFF
-MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  17:45:15         PAGE 15
+MPASM 5.87                    INTEGRADOR.ASM   11-10-2025  18:16:52         PAGE 15
 
 
 SYMBOL TABLE
@@ -823,7 +825,7 @@ _WRT_HALF                         000039FF
 _WRT_OFF                          00003FFF
 _XT_OSC                           00003FF9
 __16F887                          00000001
-                                  0000004F
+                                  00000051
 
 Errors   :     0
 Warnings :     0 reported,     0 suppressed
