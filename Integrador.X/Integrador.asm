@@ -12,6 +12,7 @@ Contador2   EQU 0x21
 Contador3   EQU 0x22
 CONTA	    EQU 0X24
 VALOR_INGRESADO_RPM EQU 0X23
+VALOR_TEMP	    EQU 0X25
 W_TEMP EQU 0X70
 STATUS_TEMP EQU 0X71
 
@@ -42,6 +43,7 @@ INICIO
 
     BANKSEL TRISC
     bcf     TRISC, 2           ; PIN RC2 (CCP1) COMO salida
+    CLRF    VALOR_TEMP
 
     ;--- Configuración del PWM ---
     BANKSEL CCP1CON
@@ -66,9 +68,9 @@ INICIO
     BANKSEL PIE1
     BSF PIE1, 1			; ACTIVO INTERRUPCION POR MATCH DE TMR2 A PR2
     
-   BANKSEL INTCON
-   MOVLW b'11000000'
-   MOVWF INTCON      ; Habilito GIE y PEIE
+    BANKSEL INTCON
+    MOVLW b'11000000'
+    MOVWF INTCON      ; Habilito GIE y PEIE
     
     ;---------------------------------------------------------------------------------------------
     ;Necesitás habilitar las interrupciones periféricas (bit PEIE en INTCON)
@@ -78,18 +80,23 @@ INICIO
  
     
 LOOP 
-    ;MOVLW   D'254'
-    ;MOVWF   VALOR_INGRESADO_RPM
-    ;CALL    Delay1s
-    
-    ;MOVLW   D'100'
-    ;MOVWF   VALOR_INGRESADO_RPM
-    ;CALL    Delay1s
-
-    MOVLW   D'20'
+    MOVLW   D'255'
     MOVWF   VALOR_INGRESADO_RPM
     CALL    Delay1s
 
+    MOVLW   D'128'
+    MOVWF   VALOR_INGRESADO_RPM
+    CALL    Delay1s
+    
+    MOVLW   D'64'
+    MOVWF   VALOR_INGRESADO_RPM
+    CALL    Delay1s
+    
+    MOVLW   D'20'
+    MOVWF   VALOR_INGRESADO_RPM
+    CALL    Delay1s
+    
+    
     ;CLRF    VALOR_INGRESADO_RPM   ; = 0
     ;CALL    Delay400us
 
@@ -110,10 +117,14 @@ ISR
     
 	
 TMR2_ISR
-    MOVF VALOR_INGRESADO_RPM,0	  ; EL VALOR DE RPM QUE INGRESE SE PEGA EN W
-    RRF VALOR_INGRESADO_RPM, W
-    RRF VALOR_INGRESADO_RPM, W
     BANKSEL CCPR1L
+    MOVF VALOR_INGRESADO_RPM,W	  ; EL VALOR DE RPM QUE INGRESE SE PEGA EN W
+    MOVWF   VALOR_TEMP
+    BCF	    STATUS, C
+    RRF VALOR_TEMP, F
+    RRF VALOR_TEMP, F
+    MOVF    VALOR_TEMP, W
+    
     MOVWF   CCPR1L             ; W -> CCPR1L (8 bits MSB del duty)
     BCF     CCP1CON,5          ; PONGO LOS 2 BITS LSB EN BAJO PORQUE NO LOS USAMOS 
     BCF     CCP1CON,4
