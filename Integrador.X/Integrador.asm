@@ -89,13 +89,16 @@ INICIO
 	MOVWF	BAUDCTL		;Configuro Baud Rate
 
 ; ---------------------------------- Configuración del PWM --------------------------------------------- ;
+	BANKSEL TRISC
+	BCF	TRISC, 2    ; RC2 como salida
+	
 	BANKSEL CCP1CON
-	movlw   b'00001100'        ; ACTIVO EL MODO PWM Y PONGO LOS 2 BITS LSB EN BAJO PORQUE NO LOS USAMOS 
-	movwf   CCP1CON
+	MOVLW   B'00001100'        ; ACTIVO EL MODO PWM Y PONGO LOS 2 BITS LSB EN BAJO PORQUE NO LOS USAMOS 
+	MOVWF   CCP1CON
 
 	MOVLW   D'63'              ; PARA UNA FRECUENCIA CONSTANTE DE 12KHZ TENGO UN PR2 DE 83
 	BANKSEL PR2
-	movwf   PR2
+	MOVWF   PR2
 
 	BANKSEL T2CON
 	MOVLW   B'00000100'        ; Prescaler EN 1 Y TMR2 ENCENDIDO (ARRANCA EL PWM)
@@ -103,7 +106,8 @@ INICIO
 	CALL    Delay1s            ; ESPERO 1 SEGUNDO PARA ESTABILIZAR EL MODULO CCP
 	
 	BANKSEL	CCPR1L
-	CLRF	CCPR1L
+	MOVLW	D'255'
+	MOVWF	VALOR_RPM
     
 ; ------------------------------------- Configuración ADC ----------------------------------------------- ;
     ;------ CONFIGURO EL PUERTO -------- ;
@@ -126,13 +130,16 @@ INICIO
 		
     ; ------ CONFIGURO EL BUFFER DE SALIDA ---------- ;
 	BANKSEL ADCON1			 ; CONFIGURO TENSIONES DE REFERENCIA Y FORMATO DE SALIDA 
-	MOVLW	B'00110000' 		 ;Vdd and Vss as Vref Y JUSTIFICACION POR IZQUIERDA
+	MOVLW	B'00000000' 		 ;Vdd and Vss as Vref Y JUSTIFICACION POR IZQUIERDA
 	MOVWF	ADCON1		 	
 	
 	BANKSEL ADCON0  
 	MOVLW	B'01000001'		; ADC ENABLED, GO=0, SELECCIONO CANAL AN4, SELECCIONO FOSC/2
 	MOVWF	ADCON0	
-
+	
+	CALL	DELAY_20US
+	BSF	ADCON0, 1			; INICIO LA CONVERSIÓN
+	BSF	FLAG, 1			; Haciendo conversion, ADC ocupado
 	
 ; ---------------------------------------- Configuración RB ---------------------------------------------------- ;
 	BANKSEL	ANSELH
@@ -182,22 +189,22 @@ LOOP:
     MOVF    START_SYNC_TX, W
     MOVWF   TXREG		    ; Cargo TXREG con un caracter de inicio
     CALL    BUFF_READY		    ; Buffer de envío libre?
-    MOVF    ADC_L, W
+    MOVF    ADC_H, W
     MOVWF   TXREG		    ; Cargo TXREG con el valor de ADRESL
     CALL    BUFF_READY		    ; Buffer de envío libre?
-    MOVF    ADC_H, W		    
+    MOVF    ADC_L, W		    
     MOVWF   TXREG		    ; Cargo TXREG con el valor de ADRESH
     
     CALL    Delay1s		    ; Delay de 1 segundo entre 3 datos
 ; --------------------------------------------------------------------------------------------------- ;
     
     
-    BTFSS	FLAG_ADC, 0		;Termino la conversion?
-	GOTO	LOOP
-	BCF	FLAG_ADC, 1		;Termino, ADC ready
-	CALL	DELAY_20US			; ESPERAMOS UN TIEMPO DE CARGA
-	BSF	ADCON0, 1			; INICIO LA CONVERSIÓN
-	BSF	FLAG_ADC, 1		;ADC ocupado
+    BTFSS   FLAG_ADC, 0		;Termino la conversion?
+    GOTO    LOOP
+    BCF	    FLAG_ADC, 1		;Termino, ADC ready
+    CALL    DELAY_20US			; ESPERAMOS UN TIEMPO DE CARGA
+    BSF	    ADCON0, 1			; INICIO LA CONVERSIÓN
+    BSF	    FLAG_ADC, 1		;ADC ocupado
 
 	
     GOTO LOOP
