@@ -172,8 +172,44 @@ INICIO
 
 
 
-LOOP
+LOOP:
+    BANKSEL PIR1
+    BTFSS   PIR1, TXIF
+    GOTO    LOOP
+; ------------------ Algorítmo Básico para el envío de tres datos (3bytes) -------------------------- ;
+    BANKSEL TXREG
+    
+    MOVF    START_SYNC_TX, W
+    MOVWF   TXREG		    ; Cargo TXREG con un caracter de inicio
+    CALL    BUFF_READY		    ; Buffer de envío libre?
+    MOVF    ADC_L, W
+    MOVWF   TXREG		    ; Cargo TXREG con el valor de ADRESL
+    CALL    BUFF_READY		    ; Buffer de envío libre?
+    MOVF    ADC_H, W		    
+    MOVWF   TXREG		    ; Cargo TXREG con el valor de ADRESH
+    
+    CALL    Delay1s		    ; Delay de 1 segundo entre 3 datos
+; --------------------------------------------------------------------------------------------------- ;
+    
+    
+    BTFSS	FLAG_ADC, 0		;Termino la conversion?
+	GOTO	LOOP
+	BCF	FLAG_ADC, 1		;Termino, ADC ready
+	CALL	DELAY_20US			; ESPERAMOS UN TIEMPO DE CARGA
+	BSF	ADCON0, 1			; INICIO LA CONVERSIÓN
+	BSF	FLAG_ADC, 1		;ADC ocupado
+
+	
     GOTO LOOP
+
+
+    
+
+BUFF_READY
+    BTFSS   PIR1, TXIF
+    GOTO    BUFF_READY
+    
+    RETURN
 
 
 
@@ -259,7 +295,6 @@ ISR_RX:
     BTFSS   STATUS, Z		; Verifico si coincide con el caracter de Inicio 0xC9
     GOTO    FIN_ISR		; Si no coincide, sale de la ISR
     
-    ;BSF	    FLAG, 1
     GOTO    CARGA_PWM		; Coincide, entonces, carga PWM
     
     GOTO    FIN_ISR
@@ -302,8 +337,10 @@ ISR_ADC:
     BANKSEL ADRESH
     MOVF    ADRESH, W
     MOVWF   AH
+    MOVWF   ADC_H
     MOVF    ADRESL, W
     MOVWF   AL
+    MOVWF   ADC_L
     GOTO    D_DONE
 
 
