@@ -121,6 +121,7 @@ INICIO
 	BANKSEL	PORTA			; BANCO 0
 	BSF	START, 0
 	CLRF	NAFTA
+	BSF	NAFTA, 0
 	CLRF	FLAG_ADC
 
 	BANKSEL ANSEL			;PORTA COMO ENTRADA ANALÓGICA 
@@ -185,7 +186,10 @@ INICIO
 LOOP:
     BANKSEL PORTA
     BTFSC   FLAG, 7
-    CALL    ANTIRREBOTE
+    CALL    ANTIRREBOTE_INTE
+    
+    BTFSC   FLAG, 6
+    CALL    ANTIRREBOTE_RBIE
 
     BANKSEL PIR1
     BTFSC   PIR1, TXIF
@@ -195,6 +199,7 @@ LOOP:
     BTFSC   FLAG_ADC, 0		;Termino la conversion?
     BCF	    FLAG_ADC, 1		;Termino, ADC ready
     CALL    DELAY_20US			; ESPERAMOS UN TIEMPO DE CARGA
+    
     BANKSEL ADCON0
     BSF	    ADCON0, 1			; INICIO LA CONVERSIÓN
     BSF	    FLAG_ADC, 1		;ADC ocupado
@@ -203,11 +208,26 @@ LOOP:
 
 
 
-ANTIRREBOTE
+ANTIRREBOTE_INTE
     CALL    DELAY_20ms
     BCF	    FLAG, 7
     BCF	    INTCON, 1
     BSF	    INTCON, 4
+    
+    RETURN
+
+ANTIRREBOTE_RBIE
+    CALL    DELAY_20ms
+    
+    BANKSEL PORTB
+    MOVF    PORTB, W
+    
+    BANKSEL FLAG
+    BCF	    FLAG, 6
+    
+    BANKSEL INTCON
+    BCF	    INTCON, 0
+    BSF	    INTCON, 3
     
     RETURN
 
@@ -315,22 +335,37 @@ OFF
 
 
 ISR_RBIE:
-    BCF	    INTCON, 0    ; Limpiar flag de interrupción externa
-    MOVLW   0x02
+    BANKSEL PORTB
+    MOVF    PORTB, W
+    BANKSEL INTCON
+    BCF	    INTCON, 0    ; Limpiar flag de interrupción por cambio en RB
+    BCF	    INTCON, 3    ; Deshabilito RBIE (antirrebote por hardware)
+    
+    BTFSS   PORTB,1
+    GOTO    FIN_ISR
+    
+    BANKSEL FLAG
+    BSF	    FLAG, 6
+    
+    BANKSEL NAFTA
+    MOVLW   0x01
     XORWF   NAFTA, F      ; Cambia entre 0 y 1
-    MOVF    NAFTA,W
-    MOVWF   PORTD
-    
-    BTFSC   NAFTA,0
+    BTFSS   NAFTA, 0
     GOTO    RESERVA
-   
     
+    BANKSEL PORTD
+    BCF	    PORTD, 1
+
     GOTO    FIN_ISR    
     
 RESERVA
-    
+    BANKSEL VALOR_RPM
     MOVLW   D'77'
     MOVWF   VALOR_RPM
+    
+    BANKSEL PORTD
+    BSF	    PORTD, 1
+    
     GOTO    FIN_ISR
 
 
