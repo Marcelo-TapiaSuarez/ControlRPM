@@ -1,4 +1,4 @@
-MPASM 5.87                    INTEGRADOR.ASM   11-14-2025  21:05:07         PAGE  1
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  10:28:31         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -57,7 +57,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
   00000030            00040 NAFTA           EQU 0X30        ; Tanque de combustible (reserva = 0, lleno = 1)
   00000031            00041 FLAG_ADC        EQU 0X31        
   00000032            00042 START           EQU 0X32        ; Boton de on/off (off = 0, on = 1)
-MPASM 5.87                    INTEGRADOR.ASM   11-14-2025  21:05:07         PAGE  2
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  10:28:31         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -100,7 +100,7 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
                       00073 
 000D   1283 1303      00074         BANKSEL RCSTA
                       00075 
-000F   3090           00076         MOVLW   B'10010000'
+000F   3080           00076         MOVLW   B'10000000'
 0010   0098           00077         MOVWF   RCSTA           ;Configuro la Recepción
                       00078 
 0011   01A6           00079         CLRF    RPM
@@ -116,7 +116,7 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0019   0087           00089         MOVWF   BAUDCTL         ;Configuro Baud Rate
                       00090 
-MPASM 5.87                    INTEGRADOR.ASM   11-14-2025  21:05:07         PAGE  3
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  10:28:31         PAGE  3
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -146,369 +146,416 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 002A   1283 1303      00108         BANKSEL CCPR1L
 002C   30FF           00109         MOVLW   D'255'
 002D   00A4           00110         MOVWF   VALOR_RPM
-                      00111     
-                      00112 ; ------------------------------------- Configuración ADC ----------------------------------------------
+002E   1427           00111         BSF     FLAG, 0
+                      00112     
+                      00113 ; ------------------------------------- Configuración ADC ----------------------------------------------
                             - ;
-                      00113     ;------ CONFIGURO EL PUERTO -------- ;
-002E   1683 1303      00114         BANKSEL TRISA                   ;PORTA COMO ENTRADA (ADEMAS DESHABILITO EL BUFFER DE SALIDA)
-0030   3001           00115         MOVLW   B'00000001'
+                      00114     ;------ CONFIGURO EL PUERTO -------- ;
+002F   1683 1303      00115         BANKSEL TRISA                   ;PORTA COMO ENTRADA (ADEMAS DESHABILITO EL BUFFER DE SALIDA)
+0031   3001           00116         MOVLW   B'00000001'
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0031   0085           00116         MOVWF   TRISA 
-                      00117         
+0032   0085           00117         MOVWF   TRISA 
+                      00118         
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0032   0188           00118         CLRF    TRISD                   ;PORTD Y PORTC COMO ENTRADAS DIGITALES
-0033   1432           00119         BSF     START, 0
-0034   01B0           00120         CLRF    NAFTA
-0035   01B1           00121         CLRF    FLAG_ADC
-                      00122 
-0036   1683 1703      00123         BANKSEL ANSEL                   ;PORTA COMO ENTRADA ANALÓGICA 
-0038   3001           00124         MOVLW   B'00000001'
+0033   0188           00119         CLRF    TRISD                   ;PORTD COMO SALIDAS DIGITALES
+                      00120         
+0034   1283 1303      00121         BANKSEL PORTA                   ; BANCO 0
+0036   1432           00122         BSF     START, 0
+0037   01B0           00123         CLRF    NAFTA
+0038   01B1           00124         CLRF    FLAG_ADC
+                      00125 
+0039   1683 1703      00126         BANKSEL ANSEL                   ;PORTA COMO ENTRADA ANALÓGICA 
+003B   3001           00127         MOVLW   B'00000001'
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0039   0088           00125         MOVWF   ANSEL
-                      00126 
-003A   1283 1303      00127         BANKSEL PORTB
-003C   0186           00128         CLRF    PORTB                   ; LIMPIO LOS PUERTOS
-003D   0188           00129         CLRF    PORTD
-                      00130                 
-                      00131     ; ------ CONFIGURO EL BUFFER DE SALIDA ---------- ;
-003E   1683 1303      00132         BANKSEL ADCON1                   ; CONFIGURO TENSIONES DE REFERENCIA Y FORMATO DE SALIDA 
-0040   3080           00133         MOVLW   B'10000000'              ;Vdd and Vss as Vref Y JUSTIFICACION POR IZQUIERDA
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0041   009F           00134         MOVWF   ADCON1                  
-MPASM 5.87                    INTEGRADOR.ASM   11-14-2025  21:05:07         PAGE  4
+003C   0088           00128         MOVWF   ANSEL
+                      00129 
+003D   1283 1303      00130         BANKSEL PORTA
+003F   0186           00131         CLRF    PORTB                   ; LIMPIO LOS PUERTOS
+0040   0188           00132         CLRF    PORTD
+                      00133                 
+                      00134     ; ------ CONFIGURO EL BUFFER DE SALIDA ---------- ;
+0041   1683 1303      00135         BANKSEL ADCON1                   ; CONFIGURO TENSIONES DE REFERENCIA Y FORMATO DE SALIDA 
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  10:28:31         PAGE  4
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00135         
-0042   1283 1303      00136         BANKSEL ADCON0  
-0044   3041           00137         MOVLW   B'01000001'             ; ADC ENABLED, GO=0, SELECCIONO CANAL AN4, SELECCIONO FOSC/2
-0045   009F           00138         MOVWF   ADCON0  
-                      00139         
-0046   2???           00140         CALL    DELAY_20US
-0047   149F           00141         BSF     ADCON0, 1                       ; INICIO LA CONVERSIÓN
-0048   14A7           00142         BSF     FLAG, 1                 ; Haciendo conversion, ADC ocupado
-                      00143         
-                      00144 ; ---------------------------------------- Configuración RB --------------------------------------------
+0043   3080           00136         MOVLW   B'10000000'              ;Vdd and Vss as Vref Y JUSTIFICACION POR IZQUIERDA
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0044   009F           00137         MOVWF   ADCON1                  
+                      00138         
+0045   1283 1303      00139         BANKSEL ADCON0  
+0047   3041           00140         MOVLW   B'01000001'             ; ADC ENABLED, GO=0, SELECCIONO CANAL AN4, SELECCIONO FOSC/2
+0048   009F           00141         MOVWF   ADCON0  
+                      00142         
+0049   2???           00143         CALL    DELAY_20US
+004A   149F           00144         BSF     ADCON0, 1                       ; INICIO LA CONVERSIÓN
+004B   14B1           00145         BSF     FLAG_ADC, 1                     ; Haciendo conversion, ADC ocupado
+                      00146         
+                      00147 ; ---------------------------------------- Configuración RB --------------------------------------------
                             -------- ;
-0049   1683 1703      00145         BANKSEL ANSELH
+004C   1683 1703      00148         BANKSEL ANSELH
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-004B   0189           00146         CLRF    ANSELH
-                      00147         
-                      00148     ; -------- HABILITO PULL UP ------------- ;
-004C   1683 1303      00149         BANKSEL OPTION_REG
-004E   3000           00150         MOVLW   B'00000000'             
+004E   0189           00149         CLRF    ANSELH
+                      00150         
+                      00151     ; -------- HABILITO PULL UP ------------- ;
+004F   1683 1303      00152         BANKSEL OPTION_REG
+0051   3000           00153         MOVLW   B'00000000'             
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-004F   0081           00151         MOVWF   OPTION_REG
-                      00152         
-                      00153     ; ------ CONFIG PUERTOS PARA INTERRUPCION -------- ;
-0050   3003           00154         MOVLW   b'00000011' 
+0052   0081           00154         MOVWF   OPTION_REG
+                      00155         
+                      00156     ; ------ CONFIG PUERTOS PARA INTERRUPCION -------- ;
+0053   3003           00157         MOVLW   b'00000011' 
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0051   0086           00155         MOVWF   TRISB ; RB1-RB0 como SALIDA, el resto como ENTRADA
-0052   3003           00156         MOVLW   b'00000011'
+0054   0086           00158         MOVWF   TRISB ; RB1-RB0 como SALIDA, el resto como ENTRADA
+0055   3003           00159         MOVLW   b'00000011'
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0053   0095           00157         MOVWF   WPUB  ; Habilitamos solo las resistencias de pull up DE RB1-RB0
-0054   3002           00158         MOVLW   B'00000010'
+0056   0095           00160         MOVWF   WPUB  ; Habilitamos solo las resistencias de pull up DE RB1-RB0
+0057   3002           00161         MOVLW   B'00000010'
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0055   0096           00159         MOVWF   IOCB
-                      00160 
-                      00161     
-                      00162 ; --------------------------------- Configuración Interrupciones ---------------------------------------
-                            -------- ;
-0056   1283 1303      00163     BANKSEL     INTCON
+0058   0096           00162         MOVWF   IOCB
+                      00163 
                       00164     
-0058   100B           00165     BCF         INTCON, 0       ; Deshabilito bandera RBIF
-0059   108B           00166     BCF         INTCON, 1       ; Deshabilito bandera INTE
+                      00165 ; --------------------------------- Configuración Interrupciones ---------------------------------------
+                            -------- ;
+0059   1283 1303      00166     BANKSEL     INTCON
                       00167     
-005A   1283 1303      00168     BANKSEL     PIR1
-005C   018C           00169     CLRF        PIR1            ; Deshabilito banderas de PIR1
+005B   100B           00168     BCF         INTCON, 0       ; Deshabilito bandera RBIF
+005C   108B           00169     BCF         INTCON, 1       ; Deshabilito bandera INTE
                       00170     
-005D   1283 1303      00171     BANKSEL     INTCON
-                      00172     
-005F   30D8           00173     MOVLW       B'11011000'
-0060   008B           00174     MOVWF       INTCON          ; Habilito Interrupciones GIE, PEIE, INTE, RBIE
+005D   1283 1303      00171     BANKSEL     PIR1
+005F   018C           00172     CLRF        PIR1            ; Deshabilito banderas de PIR1
+                      00173     
+0060   1283 1303      00174     BANKSEL     INTCON
                       00175     
-0061   1683 1303      00176     BANKSEL     PIE1
-0063   3062           00177     MOVLW       B'01100010'
+0062   30D8           00176     MOVLW       B'11011000'
+0063   008B           00177     MOVWF       INTCON          ; Habilito Interrupciones GIE, PEIE, INTE, RBIE
+                      00178     
+0064   1683 1303      00179     BANKSEL     PIE1
+0066   3062           00180     MOVLW       B'01100010'
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  10:28:31         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0064   008C           00178     MOVWF       PIE1            ; Habilito Interrupción ADIE, RCIE, TMR2IE
-                      00179 
-MPASM 5.87                    INTEGRADOR.ASM   11-14-2025  21:05:07         PAGE  5
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
-                      00180 
-                      00181 
-0065                  00182 LOOP:
-0065   1283 1303      00183     BANKSEL PIR1
-0067   1E0C           00184     BTFSS   PIR1, TXIF
-0068   2???           00185     GOTO    LOOP
-                      00186 ; ------------------ Algorítmo Básico para el envío de tres datos (3bytes) -------------------------- ;
-0069   1283 1303      00187     BANKSEL TXREG
-                      00188     
-006B   082A           00189     MOVF    START_SYNC_TX, W
-006C   0099           00190     MOVWF   TXREG                   ; Cargo TXREG con un caracter de inicio
-006D   2???           00191     CALL    BUFF_READY              ; Buffer de envío libre?
-006E   0829           00192     MOVF    ADC_H, W
-006F   0099           00193     MOVWF   TXREG                   ; Cargo TXREG con el valor de ADRESL
-0070   2???           00194     CALL    BUFF_READY              ; Buffer de envío libre?
-0071   0828           00195     MOVF    ADC_L, W                
-0072   0099           00196     MOVWF   TXREG                   ; Cargo TXREG con el valor de ADRESH
-                      00197     
-0073   2???           00198     CALL    Delay1s                 ; Delay de 1 segundo entre 3 datos
-                      00199 ; --------------------------------------------------------------------------------------------------- ;
-                      00200     
-                      00201     
-0074   1C31           00202     BTFSS   FLAG_ADC, 0         ;Termino la conversion?
-0075   2???           00203     GOTO    LOOP
-0076   10B1           00204     BCF     FLAG_ADC, 1         ;Termino, ADC ready
-0077   2???           00205     CALL    DELAY_20US                  ; ESPERAMOS UN TIEMPO DE CARGA
-0078   149F           00206     BSF     ADCON0, 1                   ; INICIO LA CONVERSIÓN
-0079   14B1           00207     BSF     FLAG_ADC, 1         ;ADC ocupado
+0067   008C           00181     MOVWF       PIE1            ; Habilito Interrupción ADIE, RCIE, TMR2IE
+                      00182 
+                      00183 
+                      00184 
+0068                  00185 LOOP:
+0068   1283 1303      00186     BANKSEL PORTA
+006A   1BA7           00187     BTFSC   FLAG, 7
+006B   2???           00188     CALL    Delay1ms
+006C   13A7           00189     BCF     FLAG, 7
+006D   1283 1303      00190     BANKSEL PIR1
+006F   1E0C           00191     BTFSS   PIR1, TXIF
+0070   2???           00192     GOTO    LOOP
+0071   2???           00193     CALL    TANSMISION
+                      00194     
+0072   1283 1303      00195     BANKSEL PORTD
+0074   1C31           00196     BTFSS   FLAG_ADC, 0         ;Termino la conversion?
+0075   2???           00197     GOTO    LOOP
+0076   10B1           00198     BCF     FLAG_ADC, 1         ;Termino, ADC ready
+0077   2???           00199     CALL    DELAY_20US                  ; ESPERAMOS UN TIEMPO DE CARGA
+0078   1283 1303      00200     BANKSEL ADCON0
+007A   149F           00201     BSF     ADCON0, 1                   ; INICIO LA CONVERSIÓN
+007B   14B1           00202     BSF     FLAG_ADC, 1         ;ADC ocupado
+                      00203 
+                      00204         
+007C   2???           00205     GOTO LOOP
+                      00206 
+                      00207 
                       00208 
-                      00209         
-007A   2???           00210     GOTO LOOP
-                      00211 
-                      00212 
-                      00213     
-                      00214 
-007B                  00215 BUFF_READY
-007B   1E0C           00216     BTFSS   PIR1, TXIF
-007C   2???           00217     GOTO    BUFF_READY
-                      00218     
-007D   0008           00219     RETURN
-                      00220 
-                      00221 
-                      00222 
-                      00223 
-                      00224 
-007E                  00225 ISR:
-007E   00F0           00226     MOVWF       W_TEMP                  ; GUARDO CONTEXTO 
-007F   0E03           00227     SWAPF       STATUS,W
-0080   00F1           00228     MOVWF       STATUS_TEMP
-                      00229     
-                      00230     ; -------------------------- ISR -------------------------------- ;
-                      00231     
-0081   188B           00232     BTFSC       INTCON, 1
-MPASM 5.87                    INTEGRADOR.ASM   11-14-2025  21:05:07         PAGE  6
+007D                  00209 TANSMISION
+                      00210     ; ------------------ Algorítmo Básico para el envío de tres datos (3bytes) -------------------------
+                            - ;
+007D   1283 1303      00211     BANKSEL TXREG
+                      00212     
+007F   082A           00213     MOVF    START_SYNC_TX, W
+0080   0099           00214     MOVWF   TXREG                   ; Cargo TXREG con un caracter de inicio
+0081   2???           00215     CALL    BUFF_READY              ; Buffer de envío libre?
+0082   0829           00216     MOVF    ADC_H, W
+0083   0099           00217     MOVWF   TXREG                   ; Cargo TXREG con el valor de ADRESL
+0084   2???           00218     CALL    BUFF_READY              ; Buffer de envío libre?
+0085   0828           00219     MOVF    ADC_L, W                
+0086   0099           00220     MOVWF   TXREG                   ; Cargo TXREG con el valor de ADRESH
+                      00221     
+0087   2???           00222     CALL    Delay1s                 ; Delay de 1 segundo entre 3 datos
+                      00223 ; --------------------------------------------------------------------------------------------------- ;
+0088   0008           00224     RETURN
+                      00225     
+                      00226 
+0089                  00227 BUFF_READY
+0089   1E0C           00228     BTFSS   PIR1, TXIF
+008A   2???           00229     GOTO    BUFF_READY
+                      00230     
+008B   0008           00231     RETURN
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  10:28:31         PAGE  6
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-0082   2???           00233     GOTO        ISR_INTE
-                      00234     
-0083   180B           00235     BTFSC       INTCON, 0
-0084   2???           00236     GOTO        ISR_RBIE
-                      00237     
-0085   1A8C           00238     BTFSC       PIR1, RCIF
-0086   2???           00239     GOTO        ISR_RX
-                      00240     
-0087   188C           00241     BTFSC       PIR1, TMR2IF
-0088   2???           00242     GOTO        ISR_TMR2
+                      00232 
+                      00233 
+                      00234 
+                      00235 
+                      00236 
+008C                  00237 ISR:
+008C   00F0           00238     MOVWF       W_TEMP                  ; GUARDO CONTEXTO 
+008D   0E03           00239     SWAPF       STATUS,W
+008E   00F1           00240     MOVWF       STATUS_TEMP
+                      00241     
+                      00242     ; -------------------------- ISR -------------------------------- ;
                       00243     
-0089   1B0C           00244     BTFSC       PIR1, ADIF
-008A   2???           00245     GOTO        ISR_ADC
+008F   188B           00244     BTFSC       INTCON, 1
+0090   2???           00245     GOTO        ISR_INTE
                       00246     
-                      00247     ; --------------------------------------------------------------- ;
-                      00248     
-008B   2???           00249     GOTO        FIN_ISR
-                      00250 
-                      00251 
-                      00252 
-                      00253 
-008C                  00254 ISR_INTE:
-008C   108B           00255     BCF     INTCON, INTF    ; Limpiar flag de interrupción externa
-008D   3001           00256     MOVLW   0x01
-008E   06B2           00257     XORWF   START, F      ; Cambia entre 0 y 1
-008F   0832           00258     MOVF    START,W
-0090   0088           00259     MOVWF   PORTD
-0091   1832           00260     BTFSC   START,0
-0092   2???           00261     GOTO    OFF
-                      00262     
-0093   2???           00263     GOTO    FIN_ISR 
+0091   180B           00247     BTFSC       INTCON, 0
+0092   2???           00248     GOTO        ISR_RBIE
+                      00249     
+0093   1A8C           00250     BTFSC       PIR1, RCIF
+0094   2???           00251     GOTO        ISR_RX
+                      00252     
+0095   188C           00253     BTFSC       PIR1, TMR2IF
+0096   2???           00254     GOTO        ISR_TMR2
+                      00255     
+0097   1B0C           00256     BTFSC       PIR1, ADIF
+0098   2???           00257     GOTO        ISR_ADC
+                      00258     
+                      00259     ; --------------------------------------------------------------- ;
+                      00260     
+0099   2???           00261     GOTO        FIN_ISR
+                      00262 
+                      00263 
                       00264 
-0094                  00265 OFF
-0094   1218           00266     BCF     RCSTA,4
-0095   3000           00267     MOVLW   D'0'
-0096   00A4           00268     MOVWF   VALOR_RPM
-0097   2???           00269     GOTO    FIN_ISR
-                      00270 
-                      00271 
-                      00272 
-                      00273 
-0098                  00274 ISR_RBIE:
-0098   100B           00275     BCF     INTCON, RBIF    ; Limpiar flag de interrupción externa
-0099   3002           00276     MOVLW   0x02
-009A   06B0           00277     XORWF   NAFTA, F      ; Cambia entre 0 y 1
-009B   0830           00278     MOVF    NAFTA,W
-009C   0088           00279     MOVWF   PORTD
-                      00280     
-009D   1830           00281     BTFSC   NAFTA,0
-009E   2???           00282     GOTO    RESERVA
-                      00283    
+                      00265 
+009A                  00266 ISR_INTE:
+009A   108B           00267     BCF     INTCON, 1    ; Limpiar flag de interrupción externa
+                      00268     
+009B   1283 1303      00269     BANKSEL PORTA
+009D   17A7           00270     BSF     FLAG, 7
+009E   3001           00271     MOVLW   0x01
+009F   06B2           00272     XORWF   START, F      ; Cambia entre 0 y 1
+                      00273     ;MOVF    START,W
+00A0   1C32           00274     BTFSS   START,0
+00A1   2???           00275     GOTO    OFF
+                      00276     
+00A2   1008           00277     BCF     PORTD,0
+00A3   1508           00278     BSF     PORTD,2
+                      00279     
+00A4   1027           00280     BCF     FLAG, 0
+00A5   1698           00281     BSF     RCSTA,5
+00A6   30FF           00282     MOVLW   D'255'
+00A7   00A4           00283     MOVWF   VALOR_RPM
                       00284     
-009F   2???           00285     GOTO    FIN_ISR    
-MPASM 5.87                    INTEGRADOR.ASM   11-14-2025  21:05:07         PAGE  7
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  10:28:31         PAGE  7
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00286     
-00A0                  00287 RESERVA
-                      00288     
-00A0   304D           00289     MOVLW   D'77'
-00A1   00A4           00290     MOVWF   VALOR_RPM
-00A2   2???           00291     GOTO    FIN_ISR
-                      00292 
-                      00293 
-                      00294 
-                      00295 
-00A3                  00296 ISR_RX:
-00A3   1283 1303      00297     BANKSEL RCREG
-                      00298     
-00A5   081A           00299     MOVF    RCREG, W            ; Leo RCREG
-00A6   00AB           00300     MOVWF   START_SYNC_RX
-00A7   3CCC           00301     SUBLW   D'204'
-00A8   1D03           00302     BTFSS   STATUS, Z           ; Verifico si coincide con el caracter de Inicio 0xC9
-00A9   2???           00303     GOTO    FIN_ISR             ; Si no coincide, sale de la ISR
-                      00304     
-00AA   2???           00305     GOTO    CARGA_PWM           ; Coincide, entonces, carga PWM
+00A8                  00285     GOTO FIN_ISR
+                      00286 
+00A8                  00287 OFF
+00A8   1408           00288     BSF     PORTD, 0
+00A9   1108           00289     BCF     PORTD, 2
+00AA   1427           00290     BSF     FLAG, 0
+00AB   30FF           00291     MOVLW   D'255'
+00AC   00A4           00292     MOVWF   VALOR_RPM
+                      00293     
+00AD   1298           00294     BCF     RCSTA,5
+00AE   2???           00295     GOTO    FIN_ISR
+                      00296 
+                      00297 
+                      00298 
+                      00299 
+00AF                  00300 ISR_RBIE:
+00AF   100B           00301     BCF     INTCON, 0    ; Limpiar flag de interrupción externa
+00B0   3002           00302     MOVLW   0x02
+00B1   06B0           00303     XORWF   NAFTA, F      ; Cambia entre 0 y 1
+00B2   0830           00304     MOVF    NAFTA,W
+00B3   0088           00305     MOVWF   PORTD
                       00306     
-00AB   2???           00307     GOTO    FIN_ISR
-                      00308     
-                      00309 
-00AC                  00310 CARGA_PWM
-00AC   1283 1303      00311     BANKSEL RCREG
+00B4   1830           00307     BTFSC   NAFTA,0
+00B5   2???           00308     GOTO    RESERVA
+                      00309    
+                      00310     
+00B6   2???           00311     GOTO    FIN_ISR    
                       00312     
-00AE   00A6           00313     MOVWF   RPM
-00AF   0826           00314     MOVF    RPM, W
-                      00315     
-00B0   1283 1303      00316     BANKSEL PORTA
-00B2   00A4           00317     MOVWF   VALOR_RPM
-                      00318     
-00B3   2???           00319     GOTO    FIN_ISR
+00B7                  00313 RESERVA
+                      00314     
+00B7   304D           00315     MOVLW   D'77'
+00B8   00A4           00316     MOVWF   VALOR_RPM
+00B9   2???           00317     GOTO    FIN_ISR
+                      00318 
+                      00319 
                       00320 
                       00321 
-                      00322 
-00B4                  00323 ISR_TMR2:
-00B4   1283 1303      00324     BANKSEL CCPR1L
-00B6   0824           00325     MOVF    VALOR_RPM, W          ; EL VALOR DE RPM QUE INGRESE SE PEGA EN W
-00B7   00A5           00326     MOVWF   RPM_TEMP
-00B8   1003           00327     BCF     STATUS, C
-00B9   0CA5           00328     RRF     RPM_TEMP, F
-00BA   0CA5           00329     RRF     RPM_TEMP, F
-00BB   0825           00330     MOVF    RPM_TEMP, W
-                      00331     
-00BC   0095           00332     MOVWF   CCPR1L             ; W -> CCPR1L (8 bits MSB del duty)
-00BD   1297           00333     BCF     CCP1CON,5          ; PONGO LOS 2 BITS LSB EN BAJO PORQUE NO LOS USAMOS 
-00BE   1217           00334     BCF     CCP1CON,4
-00BF   108C           00335     BCF     PIR1, 1                     ; BAJO LA BANDERA DE DESBORDE TMR2
-                      00336     
-00C0   2???           00337     GOTO    FIN_ISR
-                      00338 
-MPASM 5.87                    INTEGRADOR.ASM   11-14-2025  21:05:07         PAGE  8
+00BA                  00322 ISR_RX:
+00BA   1283 1303      00323     BANKSEL RCREG
+                      00324     
+00BC   081A           00325     MOVF    RCREG, W            ; Leo RCREG
+00BD   00AB           00326     MOVWF   START_SYNC_RX
+00BE   3CCC           00327     SUBLW   D'204'
+00BF   1D03           00328     BTFSS   STATUS, Z           ; Verifico si coincide con el caracter de Inicio 0xC9
+00C0   2???           00329     GOTO    FIN_ISR             ; Si no coincide, sale de la ISR
+                      00330     
+00C1   2???           00331     GOTO    CARGA_PWM           ; Coincide, entonces, carga PWM
+                      00332     
+00C2   2???           00333     GOTO    FIN_ISR
+                      00334     
+                      00335 
+00C3                  00336 CARGA_PWM
+00C3   1283 1303      00337     BANKSEL RCREG
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  10:28:31         PAGE  8
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00339 
-00C1                  00340 ISR_ADC:
-00C1   130C           00341     BCF     PIR1, 6                             ; BAJ0 BANDERA DE FIN DE CONVERSIÓN ADC
-00C2   109F           00342     BCF     ADCON0, 1
-                      00343 
-00C3   1283 1303      00344     BANKSEL ADRESH          ; BANCO 0
-00C5   081E           00345     MOVF    ADRESH, W
-00C6   00B4           00346     MOVWF   AH
-00C7   00A9           00347     MOVWF   ADC_H
-00C8   1683 1303      00348     BANKSEL ADRESL          ; BANCO 1
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-00CA   081E           00349     MOVF    ADRESL, W
-00CB   1283 1303      00350     BANKSEL PORTA           ; BANCO 0
-00CD   00B3           00351     MOVWF   AL
-00CE   00A8           00352     MOVWF   ADC_L
-00CF   2???           00353     GOTO    D_DONE
-                      00354 
-                      00355 
-00D0                  00356 D_DONE
-00D0   10B1           00357     BCF     FLAG_ADC, 1         ;ADC desocupado
-00D1   1431           00358     BSF     FLAG_ADC, 0         ;Dato Listo
-00D2   2???           00359     GOTO    FIN_ISR
-                      00360 
-                      00361 
-                      00362 
+                      00338     
+00C5   00A6           00339     MOVWF   RPM
+00C6   0826           00340     MOVF    RPM, W
+                      00341     
+00C7   1283 1303      00342     BANKSEL PORTA
+00C9   00A4           00343     MOVWF   VALOR_RPM
+                      00344     
+00CA   2???           00345     GOTO    FIN_ISR
+                      00346 
+                      00347 
+                      00348 
+00CB                  00349 ISR_TMR2:
+00CB   1283 1303      00350     BANKSEL CCPR1L
+00CD   1C27           00351     BTFSS   FLAG, 0               ; No divide por 4 si está apagado
+00CE   2???           00352     GOTO    DIVIDIR
+00CF   0824           00353     MOVF    VALOR_RPM, W          ; EL VALOR DE RPM QUE INGRESE SE PEGA EN W
+00D0   00A5           00354     MOVWF   RPM_TEMP
+                      00355     
+                      00356      
+00D1   0095           00357     MOVWF   CCPR1L             ; W -> CCPR1L (8 bits MSB del duty)
+00D2   1297           00358     BCF     CCP1CON,5          ; PONGO LOS 2 BITS LSB EN BAJO PORQUE NO LOS USAMOS 
+00D3   1217           00359     BCF     CCP1CON,4
+00D4   108C           00360     BCF     PIR1, 1                     ; BAJO LA BANDERA DE DESBORDE TMR2
+                      00361     
+00D5   2???           00362     GOTO    FIN_ISR
                       00363 
                       00364 
-                      00365 
-                      00366 
-                      00367 
-                      00368 
-                      00369 
-                      00370 
-00D3                  00371 FIN_ISR:
-                      00372         
-00D3   0E71           00373         SWAPF   STATUS_TEMP, W          ; RECUPERO CONTEXTO 
-00D4   0083           00374         MOVWF   STATUS
-00D5   0EF0           00375         SWAPF   W_TEMP, F
-00D6   0E70           00376         SWAPF   W_TEMP, W
-                      00377                                  
-00D7   0009           00378         RETFIE
+00D6                  00365 DIVIDIR
+00D6   0824           00366     MOVF    VALOR_RPM, W          ; EL VALOR DE RPM QUE INGRESE SE PEGA EN W
+00D7   00A5           00367     MOVWF   RPM_TEMP
+00D8   1003           00368     BCF     STATUS, C
+00D9   0CA5           00369     RRF     RPM_TEMP, F
+00DA   0CA5           00370     RRF     RPM_TEMP, F
+00DB   0825           00371     MOVF    RPM_TEMP, W
+                      00372     
+00DC   0095           00373     MOVWF   CCPR1L             ; W -> CCPR1L (8 bits MSB del duty)
+00DD   1297           00374     BCF     CCP1CON,5          ; PONGO LOS 2 BITS LSB EN BAJO PORQUE NO LOS USAMOS 
+00DE   1217           00375     BCF     CCP1CON,4
+00DF   108C           00376     BCF     PIR1, 1                     ; BAJO LA BANDERA DE DESBORDE TMR2
+                      00377     
+00E0   2???           00378     GOTO    FIN_ISR
                       00379 
-                      00380 
-                      00381 ; ------------------ Delay de 1 segundo --------------------- ;
-00D8                  00382 Delay1s 
-00D8   300A           00383     MOVLW   D'10'
-00D9   00A0           00384     MOVWF   Contador1
-00DA                  00385 Loop1s
-00DA   2???           00386     CALL    Delay100ms
-00DB   0BA0           00387     DECFSZ  Contador1,F
-00DC   2???           00388     GOTO    Loop1s
-00DD   0008           00389     RETURN
-                      00390 
-MPASM 5.87                    INTEGRADOR.ASM   11-14-2025  21:05:07         PAGE  9
+00E1                  00380 ISR_ADC:
+00E1   130C           00381     BCF     PIR1, 6                             ; BAJ0 BANDERA DE FIN DE CONVERSIÓN ADC
+00E2   109F           00382     BCF     ADCON0, 1
+                      00383 
+00E3   1283 1303      00384     BANKSEL ADRESH          ; BANCO 0
+00E5   081E           00385     MOVF    ADRESH, W
+00E6   00B4           00386     MOVWF   AH
+00E7   00A9           00387     MOVWF   ADC_H
+00E8   1683 1303      00388     BANKSEL ADRESL          ; BANCO 1
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00EA   081E           00389     MOVF    ADRESL, W
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  10:28:31         PAGE  9
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-00DE                  00391 Delay100ms
-00DE   3064           00392     MOVLW   D'100'
-00DF   00A1           00393     MOVWF   Contador2
-00E0                  00394 Loop100ms
-00E0   2???           00395     CALL    Delay1ms
-00E1   0BA1           00396     DECFSZ  Contador2,F
-00E2   2???           00397     GOTO    Loop100ms
-00E3   0008           00398     RETURN
-                      00399 
-00E4                  00400 Delay1ms
-00E4   30FA           00401     MOVLW   D'250'
-00E5   00A2           00402     MOVWF   Contador3
-00E6                  00403 Loop1ms
-00E6   0000           00404     NOP
-00E7   0000           00405     NOP
-00E8   0BA2           00406     DECFSZ  Contador3,F
-00E9   2???           00407     GOTO    Loop1ms
-00EA   0008           00408     RETURN
+00EB   1283 1303      00390     BANKSEL PORTA           ; BANCO 0
+00ED   00B3           00391     MOVWF   AL
+00EE   00A8           00392     MOVWF   ADC_L
+00EF   2???           00393     GOTO    D_DONE
+                      00394 
+                      00395 
+00F0                  00396 D_DONE
+00F0   10B1           00397     BCF     FLAG_ADC, 1         ;ADC desocupado
+00F1   1431           00398     BSF     FLAG_ADC, 0         ;Dato Listo
+00F2   2???           00399     GOTO    FIN_ISR
+                      00400 
+                      00401 
+                      00402 
+                      00403 
+                      00404 
+                      00405 
+                      00406 
+                      00407 
+                      00408 
                       00409 
                       00410 
-                      00411 ; ------------------ Delay de 20us --------------------- ;    
-00EB                  00412 DELAY_20US
-00EB   3013           00413     MOVLW   D'19'
-00EC   00B5           00414     MOVWF   CONT
-00ED                  00415 BUCLE
-00ED   0BB5           00416     DECFSZ  CONT,F
-00EE   2???           00417     GOTO    BUCLE
-00EF   0008           00418     RETURN
+00F3                  00411 FIN_ISR:
+                      00412         
+00F3   0E71           00413         SWAPF   STATUS_TEMP, W          ; RECUPERO CONTEXTO 
+00F4   0083           00414         MOVWF   STATUS
+00F5   0EF0           00415         SWAPF   W_TEMP, F
+00F6   0E70           00416         SWAPF   W_TEMP, W
+                      00417                                  
+00F7   0009           00418         RETFIE
                       00419 
-                      00420     
-                      00421     
-23E1 3FFF             00422     END
-MPASM 5.87                    INTEGRADOR.ASM   11-14-2025  21:05:07         PAGE 10
+                      00420 
+                      00421 ; ------------------ Delay de 1 segundo --------------------- ;
+00F8                  00422 Delay1s 
+00F8   300A           00423     MOVLW   D'10'
+00F9   00A0           00424     MOVWF   Contador1
+00FA                  00425 Loop1s
+00FA   2???           00426     CALL    Delay100ms
+00FB   0BA0           00427     DECFSZ  Contador1,F
+00FC   2???           00428     GOTO    Loop1s
+00FD   0008           00429     RETURN
+                      00430 
+00FE                  00431 Delay100ms
+00FE   3064           00432     MOVLW   D'100'
+00FF   00A1           00433     MOVWF   Contador2
+0100                  00434 Loop100ms
+0100   2???           00435     CALL    Delay1ms
+0101   0BA1           00436     DECFSZ  Contador2,F
+0102   2???           00437     GOTO    Loop100ms
+0103   0008           00438     RETURN
+                      00439 
+0104                  00440 Delay1ms
+0104   30FA           00441     MOVLW   D'250'
+0105   00A2           00442     MOVWF   Contador3
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  10:28:31         PAGE 10
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0106                  00443 Loop1ms
+0106   0000           00444     NOP
+0107   0000           00445     NOP
+0108   0BA2           00446     DECFSZ  Contador3,F
+0109   2???           00447     GOTO    Loop1ms
+010A   0008           00448     RETURN
+                      00449 
+                      00450 
+                      00451 ; ------------------ Delay de 20us --------------------- ;    
+010B                  00452 DELAY_20US
+010B   3013           00453     MOVLW   D'19'
+010C   00B5           00454     MOVWF   CONT
+010D                  00455 BUCLE
+010D   0BB5           00456     DECFSZ  CONT,F
+010E   2???           00457     GOTO    BUCLE
+010F   0008           00458     RETURN
+                      00459 
+                      00460     
+                      00461     
+23E1 3FFF             00462     END
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  10:28:31         PAGE 11
 
 
 SYMBOL TABLE
@@ -567,7 +614,7 @@ BRG2                              00000002
 BRG3                              00000003
 BRG4                              00000004
 BRG5                              00000005
-MPASM 5.87                    INTEGRADOR.ASM   11-14-2025  21:05:07         PAGE 11
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  10:28:31         PAGE 12
 
 
 SYMBOL TABLE
@@ -578,8 +625,8 @@ BRG7                              00000007
 BRG8                              00000000
 BRG9                              00000001
 BRGH                              00000002
-BUCLE                             000000ED
-BUFF_READY                        0000007B
+BUCLE                             0000010D
+BUFF_READY                        00000089
 C                                 00000000
 C1CH0                             00000000
 C1CH1                             00000001
@@ -604,7 +651,7 @@ C2R                               00000002
 C2REN                             00000004
 C2RSEL                            00000004
 C2SYNC                            00000000
-CARGA_PWM                         000000AC
+CARGA_PWM                         000000C3
 CCP1CON                           00000017
 CCP1IE                            00000002
 CCP1IF                            00000002
@@ -626,7 +673,7 @@ CCP2Y                             00000004
 CCPR1                             00000015
 CCPR1H                            00000016
 CCPR1L                            00000015
-MPASM 5.87                    INTEGRADOR.ASM   11-14-2025  21:05:07         PAGE 12
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  10:28:31         PAGE 13
 
 
 SYMBOL TABLE
@@ -657,13 +704,14 @@ DC1B0                             00000004
 DC1B1                             00000005
 DC2B0                             00000004
 DC2B1                             00000005
-DELAY_20US                        000000EB
+DELAY_20US                        0000010B
+DIVIDIR                           000000D6
 D_A                               00000005
-D_DONE                            000000D0
+D_DONE                            000000F0
 D_NOT_A                           00000005
-Delay100ms                        000000DE
-Delay1ms                          000000E4
-Delay1s                           000000D8
+Delay100ms                        000000FE
+Delay1ms                          00000104
+Delay1s                           000000F8
 ECCPAS                            0000009C
 ECCPAS0                           00000004
 ECCPAS1                           00000005
@@ -681,16 +729,16 @@ EEIF                              00000004
 EEPGD                             00000007
 F                                 00000001
 FERR                              00000002
-FIN_ISR                           000000D3
+FIN_ISR                           000000F3
 FLAG                              00000027
 FLAG_ADC                          00000031
-FSR                               00000004
-MPASM 5.87                    INTEGRADOR.ASM   11-14-2025  21:05:07         PAGE 13
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  10:28:31         PAGE 14
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+FSR                               00000004
 FVREN                             00000000
 GCEN                              00000007
 GIE                               00000007
@@ -721,17 +769,17 @@ IRCF0                             00000004
 IRCF1                             00000005
 IRCF2                             00000006
 IRP                               00000007
-ISR                               0000007E
-ISR_ADC                           000000C1
-ISR_INTE                          0000008C
-ISR_RBIE                          00000098
-ISR_RX                            000000A3
-ISR_TMR2                          000000B4
-LOOP                              00000065
+ISR                               0000008C
+ISR_ADC                           000000E1
+ISR_INTE                          0000009A
+ISR_RBIE                          000000AF
+ISR_RX                            000000BA
+ISR_TMR2                          000000CB
+LOOP                              00000068
 LTS                               00000001
-Loop100ms                         000000E0
-Loop1ms                           000000E6
-Loop1s                            000000DA
+Loop100ms                         00000100
+Loop1ms                           00000106
+Loop1s                            000000FA
 MC1OUT                            00000007
 MC2OUT                            00000006
 MSK                               00000093
@@ -743,13 +791,13 @@ MSK4                              00000004
 MSK5                              00000005
 MSK6                              00000006
 MSK7                              00000007
-NAFTA                             00000030
-MPASM 5.87                    INTEGRADOR.ASM   11-14-2025  21:05:07         PAGE 14
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  10:28:31         PAGE 15
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+NAFTA                             00000030
 NOT_A                             00000005
 NOT_ADDRESS                       00000005
 NOT_BO                            00000000
@@ -765,7 +813,7 @@ NOT_TX8                           00000006
 NOT_W                             00000002
 NOT_WRITE                         00000002
 OERR                              00000001
-OFF                               00000094
+OFF                               000000A8
 OPTION_REG                        00000081
 OSCCON                            0000008F
 OSCTUNE                           00000090
@@ -802,13 +850,13 @@ PS0                               00000000
 PS1                               00000001
 PS2                               00000002
 PSA                               00000003
-PSSAC0                            00000002
-MPASM 5.87                    INTEGRADOR.ASM   11-14-2025  21:05:07         PAGE 15
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  10:28:31         PAGE 16
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+PSSAC0                            00000002
 PSSAC1                            00000003
 PSSBD0                            00000000
 PSSBD1                            00000001
@@ -861,18 +909,18 @@ RD4                               00000004
 RD5                               00000005
 RD6                               00000006
 RD7                               00000007
-RE0                               00000000
-MPASM 5.87                    INTEGRADOR.ASM   11-14-2025  21:05:07         PAGE 16
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  10:28:31         PAGE 17
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+RE0                               00000000
 RE1                               00000001
 RE2                               00000002
 RE3                               00000003
 READ_WRITE                        00000002
-RESERVA                           000000A0
+RESERVA                           000000B7
 RP0                               00000005
 RP1                               00000006
 RPM                               00000026
@@ -920,13 +968,13 @@ STRB                              00000001
 STRC                              00000002
 STRD                              00000003
 STRSYNC                           00000004
-SWDTEN                            00000000
-MPASM 5.87                    INTEGRADOR.ASM   11-14-2025  21:05:07         PAGE 17
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  10:28:31         PAGE 18
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SWDTEN                            00000000
 SYNC                              00000004
 T0CS                              00000005
 T0IE                              00000005
@@ -944,6 +992,7 @@ T1SYNC                            00000002
 T2CKPS0                           00000000
 T2CKPS1                           00000001
 T2CON                             00000012
+TANSMISION                        0000007D
 TMR0                              00000001
 TMR0IE                            00000005
 TMR0IF                            00000002
@@ -978,14 +1027,14 @@ TRISB1                            00000001
 TRISB2                            00000002
 TRISB3                            00000003
 TRISB4                            00000004
-TRISB5                            00000005
-TRISB6                            00000006
-MPASM 5.87                    INTEGRADOR.ASM   11-14-2025  21:05:07         PAGE 18
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  10:28:31         PAGE 19
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TRISB5                            00000005
+TRISB6                            00000006
 TRISB7                            00000007
 TRISC                             00000087
 TRISC0                            00000000
@@ -1037,14 +1086,14 @@ VR1                               00000001
 VR2                               00000002
 VR3                               00000003
 VRCON                             00000097
-VREN                              00000007
-VROE                              00000006
-MPASM 5.87                    INTEGRADOR.ASM   11-14-2025  21:05:07         PAGE 19
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  10:28:31         PAGE 20
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+VREN                              00000007
+VROE                              00000006
 VRR                               00000005
 VRSS                              00000004
 W                                 00000000
@@ -1096,14 +1145,14 @@ _EXTRCIO                          00003FFE
 _EXTRC_OSC_CLKOUT                 00003FFF
 _EXTRC_OSC_NOCLKOUT               00003FFE
 _FCMEN_OFF                        000037FF
-_FCMEN_ON                         00003FFF
-_FOSC_EC                          00003FFB
-MPASM 5.87                    INTEGRADOR.ASM   11-14-2025  21:05:07         PAGE 20
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  10:28:31         PAGE 21
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_FCMEN_ON                         00003FFF
+_FOSC_EC                          00003FFB
 _FOSC_EXTRC_CLKOUT                00003FFF
 _FOSC_EXTRC_NOCLKOUT              00003FFE
 _FOSC_HS                          00003FFA
@@ -1139,6 +1188,7 @@ _WRT_HALF                         000039FF
 _WRT_OFF                          00003FFF
 _XT_OSC                           00003FF9
 __16F887                          00000001
+    GOTO FIN_ISR                  000000A8
 
 Errors   :     0
 Warnings :     0 reported,     0 suppressed

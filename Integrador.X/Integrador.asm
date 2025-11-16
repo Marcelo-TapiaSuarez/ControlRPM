@@ -73,7 +73,7 @@ INICIO
 
 	BANKSEL	RCSTA
 
-	MOVLW	B'10010000'
+	MOVLW	B'10000000'
 	MOVWF	RCSTA		;Configuro la Recepción
 
 	CLRF	RPM
@@ -108,6 +108,7 @@ INICIO
 	BANKSEL	CCPR1L
 	MOVLW	D'255'
 	MOVWF	VALOR_RPM
+	BSF	FLAG, 0
     
 ; ------------------------------------- Configuración ADC ----------------------------------------------- ;
     ;------ CONFIGURO EL PUERTO -------- ;
@@ -115,7 +116,9 @@ INICIO
 	MOVLW	B'00000001'
 	MOVWF	TRISA 
 	
-	CLRF	TRISD			;PORTD Y PORTC COMO ENTRADAS DIGITALES
+	CLRF	TRISD			;PORTD COMO SALIDAS DIGITALES
+	
+	BANKSEL	PORTA			; BANCO 0
 	BSF	START, 0
 	CLRF	NAFTA
 	CLRF	FLAG_ADC
@@ -124,7 +127,7 @@ INICIO
 	MOVLW	B'00000001'
 	MOVWF	ANSEL
 
-	BANKSEL	PORTB
+	BANKSEL	PORTA
 	CLRF	PORTB 			; LIMPIO LOS PUERTOS
 	CLRF	PORTD
 		
@@ -139,7 +142,7 @@ INICIO
 	
 	CALL	DELAY_20US
 	BSF	ADCON0, 1			; INICIO LA CONVERSIÓN
-	BSF	FLAG, 1			; Haciendo conversion, ADC ocupado
+	BSF	FLAG_ADC, 1			; Haciendo conversion, ADC ocupado
 	
 ; ---------------------------------------- Configuración RB ---------------------------------------------------- ;
 	BANKSEL	ANSELH
@@ -180,10 +183,31 @@ INICIO
 
 
 LOOP:
+    BANKSEL PORTA
+    BTFSC   FLAG, 7
+    CALL    Delay1ms
+    BCF	    FLAG, 7
     BANKSEL PIR1
     BTFSS   PIR1, TXIF
     GOTO    LOOP
-; ------------------ Algorítmo Básico para el envío de tres datos (3bytes) -------------------------- ;
+    CALL    TANSMISION
+    
+    BANKSEL PORTD
+    BTFSS   FLAG_ADC, 0		;Termino la conversion?
+    GOTO    LOOP
+    BCF	    FLAG_ADC, 1		;Termino, ADC ready
+    CALL    DELAY_20US			; ESPERAMOS UN TIEMPO DE CARGA
+    BANKSEL ADCON0
+    BSF	    ADCON0, 1			; INICIO LA CONVERSIÓN
+    BSF	    FLAG_ADC, 1		;ADC ocupado
+
+	
+    GOTO LOOP
+
+
+
+TANSMISION
+    ; ------------------ Algorítmo Básico para el envío de tres datos (3bytes) -------------------------- ;
     BANKSEL TXREG
     
     MOVF    START_SYNC_TX, W
@@ -197,19 +221,7 @@ LOOP:
     
     CALL    Delay1s		    ; Delay de 1 segundo entre 3 datos
 ; --------------------------------------------------------------------------------------------------- ;
-    
-    
-    BTFSS   FLAG_ADC, 0		;Termino la conversion?
-    GOTO    LOOP
-    BCF	    FLAG_ADC, 1		;Termino, ADC ready
-    CALL    DELAY_20US			; ESPERAMOS UN TIEMPO DE CARGA
-    BSF	    ADCON0, 1			; INICIO LA CONVERSIÓN
-    BSF	    FLAG_ADC, 1		;ADC ocupado
-
-	
-    GOTO LOOP
-
-
+    RETURN
     
 
 BUFF_READY
@@ -252,27 +264,41 @@ ISR:
 
 
 ISR_INTE:
-    BCF	    INTCON, INTF    ; Limpiar flag de interrupción externa
+    BCF	    INTCON, 1    ; Limpiar flag de interrupción externa
+    
+    BANKSEL PORTA
+    BSF	    FLAG, 7
     MOVLW   0x01
     XORWF   START, F      ; Cambia entre 0 y 1
-    MOVF    START,W
-    MOVWF   PORTD
-    BTFSC   START,0
+    ;MOVF    START,W
+    BTFSS   START,0
     GOTO    OFF
     
-    GOTO    FIN_ISR 
+    BCF	    PORTD,0
+    BSF	    PORTD,2
+    
+    BCF	    FLAG, 0
+    BSF	    RCSTA,5
+    MOVLW   D'255'
+    MOVWF   VALOR_RPM
+    
+    GOTO FIN_ISR
 
 OFF
-    BCF	    RCSTA,4
-    MOVLW   D'0'
+    BSF	    PORTD, 0
+    BCF	    PORTD, 2
+    BSF	    FLAG, 0
+    MOVLW   D'255'
     MOVWF   VALOR_RPM
+    
+    BCF	    RCSTA,5
     GOTO    FIN_ISR
 
 
 
 
 ISR_RBIE:
-    BCF	    INTCON, RBIF    ; Limpiar flag de interrupción externa
+    BCF	    INTCON, 0    ; Limpiar flag de interrupción externa
     MOVLW   0x02
     XORWF   NAFTA, F      ; Cambia entre 0 y 1
     MOVF    NAFTA,W
@@ -322,6 +348,21 @@ CARGA_PWM
 
 ISR_TMR2:
     BANKSEL CCPR1L
+    BTFSS   FLAG, 0		  ; No divide por 4 si está apagado
+    GOTO    DIVIDIR
+    MOVF    VALOR_RPM, W	  ; EL VALOR DE RPM QUE INGRESE SE PEGA EN W
+    MOVWF   RPM_TEMP
+    
+     
+    MOVWF   CCPR1L             ; W -> CCPR1L (8 bits MSB del duty)
+    BCF     CCP1CON,5          ; PONGO LOS 2 BITS LSB EN BAJO PORQUE NO LOS USAMOS 
+    BCF     CCP1CON,4
+    BCF     PIR1, 1			; BAJO LA BANDERA DE DESBORDE TMR2
+    
+    GOTO    FIN_ISR
+
+
+DIVIDIR
     MOVF    VALOR_RPM, W	  ; EL VALOR DE RPM QUE INGRESE SE PEGA EN W
     MOVWF   RPM_TEMP
     BCF	    STATUS, C
@@ -335,7 +376,6 @@ ISR_TMR2:
     BCF     PIR1, 1			; BAJO LA BANDERA DE DESBORDE TMR2
     
     GOTO    FIN_ISR
-
 
 ISR_ADC:
     BCF	    PIR1, 6				; BAJ0 BANDERA DE FIN DE CONVERSIÓN ADC
