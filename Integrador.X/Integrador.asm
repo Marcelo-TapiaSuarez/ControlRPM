@@ -106,7 +106,7 @@ INICIO
 	CALL    Delay1s            ; ESPERO 1 SEGUNDO PARA ESTABILIZAR EL MODULO CCP
 	
 	BANKSEL	CCPR1L
-	MOVLW	D'255'
+	MOVLW	D'0'
 	MOVWF	VALOR_RPM
 	BSF	FLAG, 0
     
@@ -295,7 +295,7 @@ ISR_INTE:
 
     BCF	    FLAG,0
     BSF	    RCSTA,4
-    MOVLW   D'25'
+    MOVLW   D'25'	    ; Arranca el motor con 10% de velocidad 
     MOVWF   VALOR_RPM
     GOTO    FIN_ISR
 
@@ -305,7 +305,7 @@ OFF
     BCF     PORTD,2       ; RD2 = 0  (Start OFF)
 
     BSF	    FLAG,0
-    MOVLW   D'255'
+    MOVLW   D'0'
     MOVWF   VALOR_RPM
     BCF	    RCSTA,4
 
@@ -367,9 +367,10 @@ ISR_TMR2:
     BANKSEL CCPR1L
     BTFSS   FLAG, 0		  ; No divide por 4 si está apagado
     GOTO    DIVIDIR
-    MOVF    VALOR_RPM, W	  ; EL VALOR DE RPM QUE INGRESE SE PEGA EN W
-    MOVWF   RPM_TEMP
     
+    MOVF    VALOR_RPM, W	  ; EL VALOR DE RPM QUE INGRESE SE PEGA EN W
+    SUBLW   D'255'		  ; Invierte el valor ingresado para invertir la logica
+    MOVWF   RPM_TEMP
      
     MOVWF   CCPR1L             ; W -> CCPR1L (8 bits MSB del duty)
     BCF     CCP1CON,5          ; PONGO LOS 2 BITS LSB EN BAJO PORQUE NO LOS USAMOS 
@@ -381,6 +382,7 @@ ISR_TMR2:
 
 DIVIDIR
     MOVF    VALOR_RPM, W	  ; EL VALOR DE RPM QUE INGRESE SE PEGA EN W
+    SUBLW   D'255'		  ; Invierte el valor ingresado para invertir la logica
     MOVWF   RPM_TEMP
     BCF	    STATUS, C
     RRF	    RPM_TEMP, F
