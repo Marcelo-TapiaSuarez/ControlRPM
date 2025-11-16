@@ -170,7 +170,7 @@ ISR_INTE:
 
     ; (lo demás que quieras hacer cuando está ON)
     BCF   FLAG,0
-    BSF   RCSTA,5
+    BSF   RCSTA,4
     MOVLW D'0'
     MOVWF VALOR_RPM
     GOTO    FIN_ISR
@@ -184,7 +184,7 @@ OFF
     BSF   FLAG,0
     MOVLW D'255'
     MOVWF VALOR_RPM
-    BCF   RCSTA,5
+    BCF   RCSTA,4
 
     GOTO    FIN_ISR
 

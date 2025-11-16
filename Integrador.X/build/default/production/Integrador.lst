@@ -1,4 +1,4 @@
-MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  14:55:17         PAGE  1
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  15:25:20         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -57,7 +57,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
   00000030            00040 NAFTA           EQU 0X30        ; Tanque de combustible (reserva = 0, lleno = 1)
   00000031            00041 FLAG_ADC        EQU 0X31        
   00000032            00042 START           EQU 0X32        ; Boton de on/off (off = 0, on = 1)
-MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  14:55:17         PAGE  2
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  15:25:20         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -116,7 +116,7 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 001B   0096           00086         MOVWF   IOCB
                       00087 
                       00088     
-MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  14:55:17         PAGE  3
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  15:25:20         PAGE  3
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -175,7 +175,7 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
                       00137     ;BTFSC      INTCON, 0
                       00138  ;   GOTO       ISR_RBIE
                       00139     
-MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  14:55:17         PAGE  4
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  15:25:20         PAGE  4
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -214,7 +214,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00170 
                       00171     ; (lo demás que quieras hacer cuando está ON)
 004E   1027           00172     BCF   FLAG,0
-004F   1698           00173     BSF   RCSTA,5
+004F   1618           00173     BSF   RCSTA,4
 0050   3000           00174     MOVLW D'0'
 0051   00A4           00175     MOVWF VALOR_RPM
 0052   2???           00176     GOTO    FIN_ISR
@@ -228,13 +228,13 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 0055   1427           00184     BSF   FLAG,0
 0056   30FF           00185     MOVLW D'255'
 0057   00A4           00186     MOVWF VALOR_RPM
-0058   1298           00187     BCF   RCSTA,5
+0058   1218           00187     BCF   RCSTA,4
                       00188 
 0059   2???           00189     GOTO    FIN_ISR
                       00190 
                       00191 
                       00192 
-MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  14:55:17         PAGE  5
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  15:25:20         PAGE  5
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -293,7 +293,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00243 
 006B                  00244 Delay1ms
 006B   30FA           00245     MOVLW   D'250'
-MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  14:55:17         PAGE  6
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  15:25:20         PAGE  6
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -341,7 +341,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00285     
                       00286     
 23E1 3FFF             00287     END
-MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  14:55:17         PAGE  7
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  15:25:20         PAGE  7
 
 
 SYMBOL TABLE
@@ -400,7 +400,7 @@ BRG16                             00000003
 BRG2                              00000002
 BRG3                              00000003
 BRG4                              00000004
-MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  14:55:17         PAGE  8
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  15:25:20         PAGE  8
 
 
 SYMBOL TABLE
@@ -459,7 +459,7 @@ CCPR1                             00000015
 CCPR1H                            00000016
 CCPR1L                            00000015
 CCPR2                             0000001B
-MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  14:55:17         PAGE  9
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  15:25:20         PAGE  9
 
 
 SYMBOL TABLE
@@ -518,7 +518,7 @@ FERR                              00000002
 FIN_ISR                           0000005A
 FLAG                              00000027
 FLAG_ADC                          00000031
-MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  14:55:17         PAGE 10
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  15:25:20         PAGE 10
 
 
 SYMBOL TABLE
@@ -577,7 +577,7 @@ NAFTA                             00000030
 NOT_A                             00000005
 NOT_ADDRESS                       00000005
 NOT_BO                            00000000
-MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  14:55:17         PAGE 11
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  15:25:20         PAGE 11
 
 
 SYMBOL TABLE
@@ -636,7 +636,7 @@ PSSAC0                            00000002
 PSSAC1                            00000003
 PSSBD0                            00000000
 PSSBD1                            00000001
-MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  14:55:17         PAGE 12
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  15:25:20         PAGE 12
 
 
 SYMBOL TABLE
@@ -695,7 +695,7 @@ RE0                               00000000
 RE1                               00000001
 RE2                               00000002
 RE3                               00000003
-MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  14:55:17         PAGE 13
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  15:25:20         PAGE 13
 
 
 SYMBOL TABLE
@@ -754,7 +754,7 @@ SYNC                              00000004
 T0CS                              00000005
 T0IE                              00000005
 T0IF                              00000002
-MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  14:55:17         PAGE 14
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  15:25:20         PAGE 14
 
 
 SYMBOL TABLE
@@ -813,7 +813,7 @@ TRISB7                            00000007
 TRISC                             00000087
 TRISC0                            00000000
 TRISC1                            00000001
-MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  14:55:17         PAGE 15
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  15:25:20         PAGE 15
 
 
 SYMBOL TABLE
@@ -872,7 +872,7 @@ VRR                               00000005
 VRSS                              00000004
 W                                 00000000
 WCOL                              00000007
-MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  14:55:17         PAGE 16
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  15:25:20         PAGE 16
 
 
 SYMBOL TABLE
@@ -931,7 +931,7 @@ _FOSC_EXTRC_CLKOUT                00003FFF
 _FOSC_EXTRC_NOCLKOUT              00003FFE
 _FOSC_HS                          00003FFA
 _FOSC_INTRC_CLKOUT                00003FFD
-MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  14:55:17         PAGE 17
+MPASM 5.87                    INTEGRADOR.ASM   11-16-2025  15:25:20         PAGE 17
 
 
 SYMBOL TABLE
