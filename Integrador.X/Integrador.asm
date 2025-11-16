@@ -185,24 +185,31 @@ INICIO
 LOOP:
     BANKSEL PORTA
     BTFSC   FLAG, 7
-    CALL    Delay1ms
-    BCF	    FLAG, 7
+    CALL    ANTIRREBOTE
+
     BANKSEL PIR1
-    BTFSS   PIR1, TXIF
-    GOTO    LOOP
+    BTFSC   PIR1, TXIF
     CALL    TANSMISION
     
     BANKSEL PORTD
-    BTFSS   FLAG_ADC, 0		;Termino la conversion?
-    GOTO    LOOP
+    BTFSC   FLAG_ADC, 0		;Termino la conversion?
     BCF	    FLAG_ADC, 1		;Termino, ADC ready
     CALL    DELAY_20US			; ESPERAMOS UN TIEMPO DE CARGA
     BANKSEL ADCON0
     BSF	    ADCON0, 1			; INICIO LA CONVERSIÓN
     BSF	    FLAG_ADC, 1		;ADC ocupado
 
-	
     GOTO LOOP
+
+
+
+ANTIRREBOTE
+    CALL    DELAY_20ms
+    BCF	    FLAG, 7
+    BCF	    INTCON, 1
+    BSF	    INTCON, 4
+    
+    RETURN
 
 
 
@@ -264,34 +271,44 @@ ISR:
 
 
 ISR_INTE:
-    BCF	    INTCON, 1    ; Limpiar flag de interrupción externa
-    
-    BANKSEL PORTA
-    BSF	    FLAG, 7
+    BANKSEL INTCON
+    BCF	    INTCON, 1    ; Limpiar flag INTF
+    BCF	    INTCON, 4    ; Deshabilito INTE (antirrebote por hardware)
+
+    ; ---- Toggle de START ----
+    BANKSEL START
     MOVLW   0x01
-    XORWF   START, F      ; Cambia entre 0 y 1
-    ;MOVF    START,W
-    BTFSS   START,0
-    GOTO    OFF
-    
-    BCF	    PORTD,0
-    BSF	    PORTD,2
-    
-    BCF	    FLAG, 0
-    BSF	    RCSTA,5
-    MOVLW   D'255'
+    XORWF   START, F      ; Cambia bit0
+
+    ; Aviso al main para que haga el delay
+    BANKSEL FLAG
+    BSF     FLAG, 7
+
+    ; ---- Actualizar LEDs según START ----
+    BANKSEL PORTD
+    BTFSS   START,0       ; ¿START=1?
+    GOTO    OFF           ; NO -> rama OFF
+
+    ; -------- Rama ON (START=1) --------
+    BCF     PORTD,0       ; RD0 = 0  (Stop OFF)
+    BSF     PORTD,2       ; RD2 = 1  (Start ON)
+
+    BCF	    FLAG,0
+    BSF	    RCSTA,4
+    MOVLW   D'25'
     MOVWF   VALOR_RPM
-    
-    GOTO FIN_ISR
+    GOTO    FIN_ISR
 
 OFF
-    BSF	    PORTD, 0
-    BCF	    PORTD, 2
-    BSF	    FLAG, 0
+    ; -------- Rama OFF (START=0) --------
+    BSF     PORTD,0       ; RD0 = 1  (Stop ON)
+    BCF     PORTD,2       ; RD2 = 0  (Start OFF)
+
+    BSF	    FLAG,0
     MOVLW   D'255'
     MOVWF   VALOR_RPM
-    
-    BCF	    RCSTA,5
+    BCF	    RCSTA,4
+
     GOTO    FIN_ISR
 
 
@@ -457,6 +474,26 @@ BUCLE
     GOTO    BUCLE
     RETURN
 
-    
+
+; ------------------ Delay de 20ms --------------------- ;
+DELAY_20ms
+    MOVLW   D'200'        ; Loop externo (200 veces)
+    MOVWF   Contador2
+
+Delay20_Loop2
+    MOVLW   D'50'         ; Loop interno (50 veces)
+    MOVWF   Contador1
+
+Delay20_Loop1
+    NOP                   ; 1 ciclo
+    NOP                   ; 1 ciclo
+    DECFSZ  Contador1, F      ; 1 (o 2)
+    GOTO    Delay20_Loop1 ; 2 ciclos
+
+    DECFSZ  Contador2, F
+    GOTO    Delay20_Loop2
+
+    RETURN
+
     
     END
