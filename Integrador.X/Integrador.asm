@@ -101,7 +101,7 @@ INICIO
 	MOVWF   PR2
 
 	BANKSEL T2CON
-	MOVLW   B'00000100'        ; Prescaler EN 1 Y TMR2 ENCENDIDO (ARRANCA EL PWM)
+	MOVLW   B'00000110'        ; Prescaler EN 1 Y TMR2 ENCENDIDO (ARRANCA EL PWM)
 	MOVWF   T2CON
 	CALL    Delay1s            ; ESPERO 1 SEGUNDO PARA ESTABILIZAR EL MODULO CCP
 	
@@ -191,18 +191,9 @@ LOOP:
     BTFSC   FLAG, 6
     CALL    ANTIRREBOTE_RBIE
 
-    BANKSEL PIR1
-    BTFSC   PIR1, TXIF
-    CALL    TANSMISION
+
     
-    BANKSEL PORTD
-    BTFSC   FLAG_ADC, 0		;Termino la conversion?
-    BCF	    FLAG_ADC, 1		;Termino, ADC ready
-    CALL    DELAY_20US			; ESPERAMOS UN TIEMPO DE CARGA
-    
-    BANKSEL ADCON0
-    BSF	    ADCON0, 1			; INICIO LA CONVERSIÓN
-    BSF	    FLAG_ADC, 1		;ADC ocupado
+
 
     GOTO LOOP
 
@@ -232,24 +223,6 @@ ANTIRREBOTE_RBIE
     RETURN
 
 
-
-TANSMISION
-    ; ------------------ Algorítmo Básico para el envío de tres datos (3bytes) -------------------------- ;
-    BANKSEL TXREG
-    
-    MOVF    START_SYNC_TX, W
-    MOVWF   TXREG		    ; Cargo TXREG con un caracter de inicio
-    CALL    BUFF_READY		    ; Buffer de envío libre?
-    MOVF    ADC_H, W
-    MOVWF   TXREG		    ; Cargo TXREG con el valor de ADRESL
-    CALL    BUFF_READY		    ; Buffer de envío libre?
-    MOVF    ADC_L, W		    
-    MOVWF   TXREG		    ; Cargo TXREG con el valor de ADRESH
-    
-    CALL    Delay1s		    ; Delay de 1 segundo entre 3 datos
-; --------------------------------------------------------------------------------------------------- ;
-    RETURN
-    
 
 BUFF_READY
     BTFSS   PIR1, TXIF
@@ -371,37 +344,25 @@ RESERVA
 
 ISR_RX:
     BANKSEL RCREG
+    MOVF    RCREG, W          ; Leo el byte recibido (SIEMPRE se hace esto primero)
     
-    MOVF    RCREG, W		; Leo RCREG
-    MOVWF   START_SYNC_RX
-    SUBLW   D'204'
-    BTFSS   STATUS, Z		; Verifico si coincide con el caracter de Inicio 0xC9
-    GOTO    FIN_ISR		; Si no coincide, sale de la ISR
-    
-    GOTO    CARGA_PWM		; Coincide, entonces, carga PWM
-    
-    GOTO    FIN_ISR
-    
-
-CARGA_PWM
-    BANKSEL RCREG
-    
-    MOVF    RCREG, W
-    MOVWF   RPM
+    ; W tiene el valor de PWM enviado por LabVIEW
+    BANKSEL RPM
+    MOVWF   RPM         ; guardo PWM
     MOVF    RPM, W
-    
     BANKSEL VALOR_RPM
     MOVWF   VALOR_RPM
-    
     GOTO    FIN_ISR
 
 
 
 ISR_TMR2:
+    BANKSEL RCSTA
+    BCF	    RCSTA,4
     BANKSEL CCPR1L
     BTFSS   FLAG, 0		  ; No divide por 4 si está apagado
     GOTO    DIVIDIR
-    
+    MOVWF   VALOR_RPM
     MOVF    VALOR_RPM, W	  ; EL VALOR DE RPM QUE INGRESE SE PEGA EN W
     SUBLW   D'255'		  ; Invierte el valor ingresado para invertir la logica
     MOVWF   RPM_TEMP
@@ -410,11 +371,13 @@ ISR_TMR2:
     BCF     CCP1CON,5          ; PONGO LOS 2 BITS LSB EN BAJO PORQUE NO LOS USAMOS 
     BCF     CCP1CON,4
     BCF     PIR1, 1			; BAJO LA BANDERA DE DESBORDE TMR2
-    
+    BCF	    FLAG, 5
+    BSF	    RCSTA,4
     GOTO    FIN_ISR
 
 
 DIVIDIR
+    BANKSEL VALOR_RPM
     MOVF    VALOR_RPM, W	  ; EL VALOR DE RPM QUE INGRESE SE PEGA EN W
     SUBLW   D'255'		  ; Invierte el valor ingresado para invertir la logica
     MOVWF   RPM_TEMP
@@ -423,11 +386,14 @@ DIVIDIR
     RRF	    RPM_TEMP, F
     MOVF    RPM_TEMP, W
     
+    BANKSEL CCPR1L
     MOVWF   CCPR1L             ; W -> CCPR1L (8 bits MSB del duty)
     BCF     CCP1CON,5          ; PONGO LOS 2 BITS LSB EN BAJO PORQUE NO LOS USAMOS 
     BCF     CCP1CON,4
     BCF     PIR1, 1			; BAJO LA BANDERA DE DESBORDE TMR2
-    
+    BCF	    FLAG, 5
+    BANKSEL RCSTA
+    BSF	    RCSTA,4
     GOTO    FIN_ISR
 
 
