@@ -101,7 +101,7 @@ INICIO
 	MOVWF   PR2
 
 	BANKSEL T2CON
-	MOVLW   B'00000100'        ; Prescaler EN 1 Y TMR2 ENCENDIDO (ARRANCA EL PWM)
+	MOVLW   B'00000110'        ; Prescaler EN 1 Y TMR2 ENCENDIDO (ARRANCA EL PWM)
 	MOVWF   T2CON
 	CALL    Delay1s            ; ESPERO 1 SEGUNDO PARA ESTABILIZAR EL MODULO CCP
 	
@@ -268,17 +268,21 @@ ISR:
     
     ; -------------------------- ISR -------------------------------- ;
     
+    BTFSC	PIR1, TMR2IF
+    GOTO	ISR_TMR2
+    
+    BTFSC	PIR1, RCIF
+    GOTO	ISR_RX
+    
     BTFSC	INTCON, 1
     GOTO	ISR_INTE
     
     BTFSC	INTCON, 0
     GOTO	ISR_RBIE
     
-    BTFSC	PIR1, RCIF
-    GOTO	ISR_RX
     
-    BTFSC	PIR1, TMR2IF
-    GOTO	ISR_TMR2
+    
+    
     
     BTFSC	PIR1, ADIF
     GOTO	ISR_ADC
@@ -314,20 +318,28 @@ ISR_INTE:
     BSF     PORTD,2       ; RD2 = 1  (Start ON)
 
     BCF	    FLAG,0
-    BSF	    RCSTA,4
+    
     MOVLW   D'25'	    ; Arranca el motor con 10% de velocidad 
     MOVWF   VALOR_RPM
+    BANKSEL RCSTA
+    BSF	    RCSTA,4
     GOTO    FIN_ISR
 
 OFF
     ; -------- Rama OFF (START=0) --------
+    BANKSEL RCSTA
+    BCF	    RCSTA,4
+    
+    BANKSEL PORTD
     BSF     PORTD,0       ; RD0 = 1  (Stop ON)
     BCF     PORTD,2       ; RD2 = 0  (Start OFF)
-
+    
+    BANKSEL FLAG
     BSF	    FLAG,0
     MOVLW   D'0'
     MOVWF   VALOR_RPM
-    BCF	    RCSTA,4
+    
+    
 
     GOTO    FIN_ISR
 
@@ -359,6 +371,8 @@ ISR_RBIE:
     GOTO    FIN_ISR    
     
 RESERVA
+    BANKSEL RCSTA
+    BCF	    RCSTA,4
     BANKSEL VALOR_RPM
     MOVLW   D'77'
     MOVWF   VALOR_RPM
@@ -366,6 +380,8 @@ RESERVA
     BANKSEL PORTD
     BSF	    PORTD, 1
     
+    BANKSEL RCSTA
+    BSF	    RCSTA, 4
     GOTO    FIN_ISR
 
 
@@ -373,15 +389,14 @@ RESERVA
 
 ISR_RX:
     BANKSEL RCREG
+    MOVF    RCREG, W          ; Leo el byte recibido (SIEMPRE se hace esto primero)
     
-    MOVF    RCREG, W		; Leo RCREG
-    MOVWF   START_SYNC_RX
-    SUBLW   D'204'
-    BTFSS   STATUS, Z		; Verifico si coincide con el caracter de Inicio 0xC9
-    GOTO    FIN_ISR		; Si no coincide, sale de la ISR
-    
-    GOTO    CARGA_PWM		; Coincide, entonces, carga PWM
-    
+    ; W tiene el valor de PWM enviado por LabVIEW
+    BANKSEL RPM
+    MOVWF   RPM         ; guardo PWM
+    MOVF    RPM, W
+    BANKSEL VALOR_RPM
+    MOVWF   VALOR_RPM
     GOTO    FIN_ISR
     
 
@@ -391,7 +406,7 @@ CARGA_PWM
     MOVWF   RPM
     MOVF    RPM, W
     
-    BANKSEL PORTA
+    BANKSEL VALOR_RPM
     MOVWF   VALOR_RPM
     
     GOTO    FIN_ISR
@@ -399,10 +414,12 @@ CARGA_PWM
 
 
 ISR_TMR2:
+    BANKSEL RCSTA
+    BCF	    RCSTA,4
     BANKSEL CCPR1L
     BTFSS   FLAG, 0		  ; No divide por 4 si está apagado
     GOTO    DIVIDIR
-    
+    MOVWF   VALOR_RPM
     MOVF    VALOR_RPM, W	  ; EL VALOR DE RPM QUE INGRESE SE PEGA EN W
     SUBLW   D'255'		  ; Invierte el valor ingresado para invertir la logica
     MOVWF   RPM_TEMP
@@ -411,11 +428,13 @@ ISR_TMR2:
     BCF     CCP1CON,5          ; PONGO LOS 2 BITS LSB EN BAJO PORQUE NO LOS USAMOS 
     BCF     CCP1CON,4
     BCF     PIR1, 1			; BAJO LA BANDERA DE DESBORDE TMR2
-    
+    BCF	    FLAG, 5
+    BSF	    RCSTA,4
     GOTO    FIN_ISR
 
 
 DIVIDIR
+    BANKSEL VALOR_RPM
     MOVF    VALOR_RPM, W	  ; EL VALOR DE RPM QUE INGRESE SE PEGA EN W
     SUBLW   D'255'		  ; Invierte el valor ingresado para invertir la logica
     MOVWF   RPM_TEMP
@@ -424,12 +443,18 @@ DIVIDIR
     RRF	    RPM_TEMP, F
     MOVF    RPM_TEMP, W
     
+    BANKSEL CCPR1L
     MOVWF   CCPR1L             ; W -> CCPR1L (8 bits MSB del duty)
     BCF     CCP1CON,5          ; PONGO LOS 2 BITS LSB EN BAJO PORQUE NO LOS USAMOS 
     BCF     CCP1CON,4
     BCF     PIR1, 1			; BAJO LA BANDERA DE DESBORDE TMR2
-    
+    BCF	    FLAG, 5
+    BANKSEL RCSTA
+    BSF	    RCSTA,4
     GOTO    FIN_ISR
+
+
+
 
 ISR_ADC:
     BCF	    PIR1, 6				; BAJ0 BANDERA DE FIN DE CONVERSIÓN ADC
