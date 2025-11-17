@@ -280,8 +280,6 @@ ISR:
     BTFSC	PIR1, TMR2IF
     GOTO	ISR_TMR2
     
-    BTFSC	PIR1, ADIF
-    GOTO	ISR_ADC
     
     ; --------------------------------------------------------------- ;
     
@@ -315,7 +313,7 @@ ISR_INTE:
 
     BCF	    FLAG,0
     BSF	    RCSTA,4
-    MOVLW   D'25'	    ; Arranca el motor con 10% de velocidad 
+    MOVLW   D'77'	    ; Arranca el motor con 10% de velocidad 
     MOVWF   VALOR_RPM
     GOTO    FIN_ISR
 
@@ -388,10 +386,11 @@ ISR_RX:
 CARGA_PWM
     BANKSEL RCREG
     
+    MOVF    RCREG, W
     MOVWF   RPM
     MOVF    RPM, W
     
-    BANKSEL PORTA
+    BANKSEL VALOR_RPM
     MOVWF   VALOR_RPM
     
     GOTO    FIN_ISR
@@ -430,32 +429,6 @@ DIVIDIR
     BCF     PIR1, 1			; BAJO LA BANDERA DE DESBORDE TMR2
     
     GOTO    FIN_ISR
-
-ISR_ADC:
-    BCF	    PIR1, 6				; BAJ0 BANDERA DE FIN DE CONVERSIÓN ADC
-    BCF	    ADCON0, 1
-
-    BANKSEL ADRESH	    ; BANCO 0
-    MOVF    ADRESH, W
-    MOVWF   AH
-    MOVWF   ADC_H
-    BANKSEL ADRESL	    ; BANCO 1
-    MOVF    ADRESL, W
-    BANKSEL PORTA	    ; BANCO 0
-    MOVWF   AL
-    MOVWF   ADC_L
-    GOTO    D_DONE
-
-
-D_DONE
-    BCF	    FLAG_ADC, 1		;ADC desocupado
-    BSF	    FLAG_ADC, 0		;Dato Listo
-    GOTO    FIN_ISR
-
-
-
-
-
 
 
 
