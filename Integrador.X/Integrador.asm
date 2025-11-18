@@ -174,7 +174,7 @@ LOOP:
 
 
 ANTIRREBOTE_INTE
-    CALL    DELAY_20ms
+    CALL    DELAY_50ms
     BCF	    FLAG, 7
     BCF	    INTCON, 1
     BSF	    INTCON, 4
@@ -182,7 +182,7 @@ ANTIRREBOTE_INTE
     RETURN
 
 ANTIRREBOTE_RBIE
-    CALL    DELAY_20ms
+    CALL    DELAY_50ms
     
     BANKSEL PORTB
     MOVF    PORTB, W
@@ -211,17 +211,21 @@ ISR:
     
     ; -------------------------- ISR -------------------------------- ;
     
-    BTFSC	INTCON, 1
-    GOTO	ISR_INTE
-    
-    ;BTFSC	INTCON, 0
-    ;GOTO	ISR_RBIE
-    
     BTFSC	PIR1, RCIF
     GOTO	ISR_RX
     
     BTFSC	PIR1, TMR2IF
     GOTO	ISR_TMR2
+    
+    BTFSC	INTCON, 1
+    GOTO	ISR_INTE
+    
+    BTFSC	INTCON, 0
+    GOTO	ISR_RBIE
+    
+    
+    
+    
     
     
     ; --------------------------------------------------------------- ;
@@ -271,6 +275,7 @@ OFF
     ; -------- Rama OFF (START=0) --------
     BANKSEL PORTD
     BSF     PORTD,0       ; RD0 = 1  (Stop ON)
+    BCF	    PORTD, 1
     BCF     PORTD,2       ; RD2 = 0  (Start OFF)
     
     BANKSEL INTCON
@@ -312,7 +317,7 @@ ISR_RBIE:
     
 RESERVA
     BANKSEL VALOR_RPM
-    MOVLW   D'0'
+    MOVLW   D'25'
     MOVWF   VALOR_RPM
     
     BANKSEL PORTD
@@ -324,8 +329,8 @@ RESERVA
 
 
 ISR_RX:
-    BANKSEL RCSTA
-    BCF	    RCSTA, 4
+    BANKSEL PIE1
+    BCF	    PIE1,1
     BANKSEL RCREG
     MOVF    RCREG, W          ; Leo el byte recibido (SIEMPRE se hace esto primero)
     
@@ -335,15 +340,18 @@ ISR_RX:
     MOVF    RPM, W
     BANKSEL VALOR_RPM
     MOVWF   VALOR_RPM
-    BANKSEL RCSTA
-    BSF	    RCSTA, 4
+    
+    BANKSEL FLAG
+    BSF	    FLAG, 5
+    
+    BANKSEL PIE1
+    BSF	    PIE1,1
     GOTO    FIN_ISR
 
 
 
 ISR_TMR2:
-    BANKSEL RCSTA
-    BCF	    RCSTA,4
+
     BANKSEL FLAG
     BTFSS   FLAG, 0		  ; No divide por 4 si está apagado
     GOTO    DIVIDIR
@@ -357,15 +365,19 @@ ISR_TMR2:
     BCF     CCP1CON,4
     BCF     PIR1, 1			; BAJO LA BANDERA DE DESBORDE TMR2
     BCF	    FLAG, 5
-    BANKSEL RCSTA
-    BSF	    RCSTA,4
+
     GOTO    FIN_ISR
 
 
 DIVIDIR
-    BANKSEL RCSTA
-    BCF	    RCSTA,4
 
+    
+    BANKSEL RPM
+    MOVF    RPM, W
+    BANKSEL FLAG
+    BTFSC   FLAG, 5
+    MOVWF   VALOR_RPM
+    
     BANKSEL VALOR_RPM
     MOVF    VALOR_RPM, W	  ; EL VALOR DE RPM QUE INGRESE SE PEGA EN W
     SUBLW   D'255'		  ; Invierte el valor ingresado para invertir la logica
@@ -381,9 +393,9 @@ DIVIDIR
     BCF     CCP1CON,5          ; PONGO LOS 2 BITS LSB EN BAJO PORQUE NO LOS USAMOS 
     BCF     CCP1CON,4
     BCF     PIR1, 1			; BAJO LA BANDERA DE DESBORDE TMR2
+    BANKSEL FLAG
     BCF	    FLAG, 5
-    BANKSEL RCSTA
-    BSF	    RCSTA,4
+
     GOTO    FIN_ISR
 
 
@@ -461,5 +473,27 @@ Delay20_Loop1
 
     RETURN
 
+
+    
+; ------------------ Delay de 50 ms --------------------- ;
+DELAY_50ms
+    MOVLW   D'100'        ; Loop externo (100 veces)
+    MOVWF   Contador2
+
+Delay50_Loop2
+    MOVLW   D'100'        ; Loop interno (100 veces)
+    MOVWF   Contador1
+
+Delay50_Loop1
+    NOP                   ; 1 ciclo
+    NOP                   ; 1 ciclo
+    DECFSZ  Contador1, F  ; 1 ciclo (si no es 0)
+    GOTO    Delay50_Loop1 ; 2 ciclos SI salta
+
+    DECFSZ  Contador2, F
+    GOTO    Delay50_Loop2
+
+    RETURN
+    
     
     END
