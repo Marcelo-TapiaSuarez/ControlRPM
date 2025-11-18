@@ -103,7 +103,7 @@ INICIO
 	BANKSEL T2CON
 	MOVLW   B'00000110'        ; Prescaler EN 1 Y TMR2 ENCENDIDO (ARRANCA EL PWM)
 	MOVWF   T2CON
-	CALL    Delay1s            ; ESPERO 1 SEGUNDO PARA ESTABILIZAR EL MODULO CCP
+	CALL    DELAY_20ms            ; ESPERO 1 SEGUNDO PARA ESTABILIZAR EL MODULO CCP
 	
 	BANKSEL	CCPR1L
 	MOVLW	D'0'
@@ -181,7 +181,10 @@ INICIO
     MOVLW	B'01100010'
     MOVWF	PIE1		; Habilito Interrupción ADIE, RCIE, TMR2IE
 
-
+    BANKSEL	PORTD
+    CLRF	PORTD
+    
+    GOTO	LOOP
 
 LOOP:
     BANKSEL PORTA
@@ -209,7 +212,7 @@ LOOP:
 
 
 ANTIRREBOTE_INTE
-    CALL    DELAY_20ms
+    CALL    DELAY_50ms
     BCF	    FLAG, 7
     BCF	    INTCON, 1
     BSF	    INTCON, 4
@@ -217,7 +220,7 @@ ANTIRREBOTE_INTE
     RETURN
 
 ANTIRREBOTE_RBIE
-    CALL    DELAY_20ms
+    CALL    DELAY_50ms
     
     BANKSEL PORTB
     MOVF    PORTB, W
@@ -267,22 +270,18 @@ ISR:
     MOVWF	STATUS_TEMP
     
     ; -------------------------- ISR -------------------------------- ;
+       
+    BTFSC	PIR1, RCIF
+    GOTO	ISR_RX
     
     BTFSC	PIR1, TMR2IF
     GOTO	ISR_TMR2
-    
-    BTFSC	PIR1, RCIF
-    GOTO	ISR_RX
     
     BTFSC	INTCON, 1
     GOTO	ISR_INTE
     
     BTFSC	INTCON, 0
     GOTO	ISR_RBIE
-    
-    
-    
-    
     
     BTFSC	PIR1, ADIF
     GOTO	ISR_ADC
@@ -319,7 +318,7 @@ ISR_INTE:
 
     BCF	    FLAG,0
     
-    MOVLW   D'25'	    ; Arranca el motor con 10% de velocidad 
+    MOVLW   D'47'	    ; Arranca el motor con 10% de velocidad 
     MOVWF   VALOR_RPM
     BANKSEL RCSTA
     BSF	    RCSTA,4
@@ -374,7 +373,7 @@ RESERVA
     BANKSEL RCSTA
     BCF	    RCSTA,4
     BANKSEL VALOR_RPM
-    MOVLW   D'77'
+    MOVLW   D'6'
     MOVWF   VALOR_RPM
     
     BANKSEL PORTD
@@ -391,66 +390,29 @@ ISR_RX:
     BANKSEL RCREG
     MOVF    RCREG, W          ; Leo el byte recibido (SIEMPRE se hace esto primero)
     
-    ; W tiene el valor de PWM enviado por LabVIEW
-    BANKSEL RPM
-    MOVWF   RPM         ; guardo PWM
-    MOVF    RPM, W
-    BANKSEL VALOR_RPM
+    ANDLW   0X3F
     MOVWF   VALOR_RPM
-    GOTO    FIN_ISR
-    
 
-CARGA_PWM
-    BANKSEL RCREG
+    BANKSEL FLAG
+    BSF	    FLAG, 5
     
-    MOVWF   RPM
-    MOVF    RPM, W
-    
-    BANKSEL VALOR_RPM
-    MOVWF   VALOR_RPM
     
     GOTO    FIN_ISR
 
 
 
 ISR_TMR2:
-    BANKSEL RCSTA
-    BCF	    RCSTA,4
-    BANKSEL CCPR1L
-    BTFSS   FLAG, 0		  ; No divide por 4 si está apagado
-    GOTO    DIVIDIR
-    MOVWF   VALOR_RPM
-    MOVF    VALOR_RPM, W	  ; EL VALOR DE RPM QUE INGRESE SE PEGA EN W
-    SUBLW   D'255'		  ; Invierte el valor ingresado para invertir la logica
-    MOVWF   RPM_TEMP
-     
-    MOVWF   CCPR1L             ; W -> CCPR1L (8 bits MSB del duty)
-    BCF     CCP1CON,5          ; PONGO LOS 2 BITS LSB EN BAJO PORQUE NO LOS USAMOS 
-    BCF     CCP1CON,4
-    BCF     PIR1, 1			; BAJO LA BANDERA DE DESBORDE TMR2
-    BCF	    FLAG, 5
-    BSF	    RCSTA,4
-    GOTO    FIN_ISR
-
-
-DIVIDIR
     BANKSEL VALOR_RPM
     MOVF    VALOR_RPM, W	  ; EL VALOR DE RPM QUE INGRESE SE PEGA EN W
-    SUBLW   D'255'		  ; Invierte el valor ingresado para invertir la logica
-    MOVWF   RPM_TEMP
-    BCF	    STATUS, C
-    RRF	    RPM_TEMP, F
-    RRF	    RPM_TEMP, F
-    MOVF    RPM_TEMP, W
     
     BANKSEL CCPR1L
     MOVWF   CCPR1L             ; W -> CCPR1L (8 bits MSB del duty)
     BCF     CCP1CON,5          ; PONGO LOS 2 BITS LSB EN BAJO PORQUE NO LOS USAMOS 
     BCF     CCP1CON,4
-    BCF     PIR1, 1			; BAJO LA BANDERA DE DESBORDE TMR2
+    BCF     PIR1, 1			; BAJO LA BANDERA DE DESBORDE TMR2    .........
+    BANKSEL FLAG
     BCF	    FLAG, 5
-    BANKSEL RCSTA
-    BSF	    RCSTA,4
+
     GOTO    FIN_ISR
 
 
@@ -557,5 +519,27 @@ Delay20_Loop1
 
     RETURN
 
+    
+; ------------------ Delay de 50 ms --------------------- ;
+DELAY_50ms
+    MOVLW   D'100'        ; Loop externo (100 veces)
+    MOVWF   Contador2
+
+Delay50_Loop2
+    MOVLW   D'100'        ; Loop interno (100 veces)
+    MOVWF   Contador1
+
+Delay50_Loop1
+    NOP                   ; 1 ciclo
+    NOP                   ; 1 ciclo
+    DECFSZ  Contador1, F  ; 1 ciclo (si no es 0)
+    GOTO    Delay50_Loop1 ; 2 ciclos SI salta
+
+    DECFSZ  Contador2, F
+    GOTO    Delay50_Loop2
+
+    RETURN
+    
+    
     
     END
