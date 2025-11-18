@@ -103,52 +103,22 @@ INICIO
 	BANKSEL T2CON
 	MOVLW   B'00000110'        ; Prescaler EN 1 Y TMR2 ENCENDIDO (ARRANCA EL PWM)
 	MOVWF   T2CON
-	CALL    Delay1s            ; ESPERO 1 SEGUNDO PARA ESTABILIZAR EL MODULO CCP
+	CALL    DELAY_20ms            ; ESPERO 1 SEGUNDO PARA ESTABILIZAR EL MODULO CCP
 	
+	BANKSEL	VALOR_RPM
+	CLRF	VALOR_RPM
 	BANKSEL	CCPR1L
-	MOVLW	D'0'
-	MOVWF	VALOR_RPM
+	CLRF	CCPR1L
+	BANKSEL	FLAG
 	BSF	FLAG, 0
-    
-; ------------------------------------- Configuración ADC ----------------------------------------------- ;
-    ;------ CONFIGURO EL PUERTO -------- ;
-	BANKSEL TRISA 			;PORTA COMO ENTRADA (ADEMAS DESHABILITO EL BUFFER DE SALIDA)
-	MOVLW	B'00000001'
-	MOVWF	TRISA 
-	
-	CLRF	TRISD			;PORTD COMO SALIDAS DIGITALES
-	
-	BANKSEL	PORTA			; BANCO 0
-	BSF	START, 0
-	CLRF	NAFTA
-	BSF	NAFTA, 0
-	CLRF	FLAG_ADC
 
-	BANKSEL ANSEL			;PORTA COMO ENTRADA ANALÓGICA 
-	MOVLW	B'00000001'
-	MOVWF	ANSEL
-
-	BANKSEL	PORTA
-	CLRF	PORTB 			; LIMPIO LOS PUERTOS
-	CLRF	PORTD
-		
-    ; ------ CONFIGURO EL BUFFER DE SALIDA ---------- ;
-	BANKSEL ADCON1			 ; CONFIGURO TENSIONES DE REFERENCIA Y FORMATO DE SALIDA 
-	MOVLW	B'10000000' 		 ;Vdd and Vss as Vref Y JUSTIFICACION POR IZQUIERDA
-	MOVWF	ADCON1		 	
-	
-	BANKSEL ADCON0  
-	MOVLW	B'01000001'		; ADC ENABLED, GO=0, SELECCIONO CANAL AN4, SELECCIONO FOSC/2
-	MOVWF	ADCON0	
-	
-	CALL	DELAY_20US
-	BSF	ADCON0, 1			; INICIO LA CONVERSIÓN
-	BSF	FLAG_ADC, 1			; Haciendo conversion, ADC ocupado
-	
 ; ---------------------------------------- Configuración RB ---------------------------------------------------- ;
 	BANKSEL	ANSELH
 	CLRF	ANSELH
 	
+	BANKSEL START
+	CLRF	START
+	BSF	START,0
     ; -------- HABILITO PULL UP ------------- ;
 	BANKSEL	OPTION_REG
 	MOVLW	B'00000000'		
@@ -180,9 +150,13 @@ INICIO
     BANKSEL	PIE1
     MOVLW	B'01100010'
     MOVWF	PIE1		; Habilito Interrupción ADIE, RCIE, TMR2IE
+    
+    BANKSEL	PORTD
+    CLRF	PORTD
+    GOTO	LOOP
 
-
-
+    
+    
 LOOP:
     BANKSEL PORTA
     BTFSC   FLAG, 7
@@ -224,11 +198,7 @@ ANTIRREBOTE_RBIE
 
 
 
-BUFF_READY
-    BTFSS   PIR1, TXIF
-    GOTO    BUFF_READY
-    
-    RETURN
+
 
 
 
@@ -244,8 +214,8 @@ ISR:
     BTFSC	INTCON, 1
     GOTO	ISR_INTE
     
-    BTFSC	INTCON, 0
-    GOTO	ISR_RBIE
+    ;BTFSC	INTCON, 0
+    ;GOTO	ISR_RBIE
     
     BTFSC	PIR1, RCIF
     GOTO	ISR_RX
@@ -263,6 +233,7 @@ ISR:
 
 ISR_INTE:
     BANKSEL INTCON
+    BCF	    INTCON, 3
     BCF	    INTCON, 1    ; Limpiar flag INTF
     BCF	    INTCON, 4    ; Deshabilito INTE (antirrebote por hardware)
 
@@ -283,21 +254,31 @@ ISR_INTE:
     ; -------- Rama ON (START=1) --------
     BCF     PORTD,0       ; RD0 = 0  (Stop OFF)
     BSF     PORTD,2       ; RD2 = 1  (Start ON)
-
+    
+    BANKSEL FLAG
     BCF	    FLAG,0
-    BSF	    RCSTA,4
-    MOVLW   D'77'	    ; Arranca el motor con 10% de velocidad 
+    
+    BANKSEL INTCON
+    BSF	    INTCON, 3
+    BANKSEL VALOR_RPM
+    MOVLW   D'77'	    ; Arranca el motor con 30% de velocidad 
     MOVWF   VALOR_RPM
+    BANKSEL RCSTA
+    BSF	    RCSTA,4
     GOTO    FIN_ISR
 
 OFF
     ; -------- Rama OFF (START=0) --------
+    BANKSEL PORTD
     BSF     PORTD,0       ; RD0 = 1  (Stop ON)
     BCF     PORTD,2       ; RD2 = 0  (Start OFF)
-
+    
+    BANKSEL INTCON
+    BSF	    INTCON, 3
+    BANKSEL FLAG
     BSF	    FLAG,0
-    MOVLW   D'0'
-    MOVWF   VALOR_RPM
+    
+    BANKSEL RCSTA
     BCF	    RCSTA,4
 
     GOTO    FIN_ISR
@@ -331,7 +312,7 @@ ISR_RBIE:
     
 RESERVA
     BANKSEL VALOR_RPM
-    MOVLW   D'77'
+    MOVLW   D'0'
     MOVWF   VALOR_RPM
     
     BANKSEL PORTD
@@ -343,6 +324,8 @@ RESERVA
 
 
 ISR_RX:
+    BANKSEL RCSTA
+    BCF	    RCSTA, 4
     BANKSEL RCREG
     MOVF    RCREG, W          ; Leo el byte recibido (SIEMPRE se hace esto primero)
     
@@ -352,6 +335,8 @@ ISR_RX:
     MOVF    RPM, W
     BANKSEL VALOR_RPM
     MOVWF   VALOR_RPM
+    BANKSEL RCSTA
+    BSF	    RCSTA, 4
     GOTO    FIN_ISR
 
 
@@ -359,27 +344,32 @@ ISR_RX:
 ISR_TMR2:
     BANKSEL RCSTA
     BCF	    RCSTA,4
-    BANKSEL CCPR1L
+    BANKSEL FLAG
     BTFSS   FLAG, 0		  ; No divide por 4 si está apagado
     GOTO    DIVIDIR
-    MOVWF   VALOR_RPM
-    MOVF    VALOR_RPM, W	  ; EL VALOR DE RPM QUE INGRESE SE PEGA EN W
-    SUBLW   D'255'		  ; Invierte el valor ingresado para invertir la logica
-    MOVWF   RPM_TEMP
-     
+    BANKSEL STATUS
+
+    
+    MOVLW   D'255'
+    BANKSEL CCPR1L
     MOVWF   CCPR1L             ; W -> CCPR1L (8 bits MSB del duty)
     BCF     CCP1CON,5          ; PONGO LOS 2 BITS LSB EN BAJO PORQUE NO LOS USAMOS 
     BCF     CCP1CON,4
     BCF     PIR1, 1			; BAJO LA BANDERA DE DESBORDE TMR2
     BCF	    FLAG, 5
+    BANKSEL RCSTA
     BSF	    RCSTA,4
     GOTO    FIN_ISR
 
 
 DIVIDIR
+    BANKSEL RCSTA
+    BCF	    RCSTA,4
+
     BANKSEL VALOR_RPM
     MOVF    VALOR_RPM, W	  ; EL VALOR DE RPM QUE INGRESE SE PEGA EN W
     SUBLW   D'255'		  ; Invierte el valor ingresado para invertir la logica
+    BANKSEL RPM_TEMP
     MOVWF   RPM_TEMP
     BCF	    STATUS, C
     RRF	    RPM_TEMP, F
